@@ -902,3 +902,70 @@ export async function deleteBusinessSession(sessionToken: string): Promise<void>
   const pool = getPool();
   await pool.query(`DELETE FROM business_sessions WHERE session_token = $1;`, [sessionToken]);
 }
+export async function getBusinessAccountById(businessId: string): Promise<BusinessAccount | null> {
+  if (!businessId) return null;
+
+  if (!hasDatabaseConfig()) {
+    return memoryStore.accounts.get(businessId) || null;
+  }
+
+  await ensureBusinessAuthSchema();
+  const pool = getPool();
+  const result = await pool.query(
+    "SELECT tenant_id FROM business_accounts WHERE id = $1 LIMIT 1;",
+    [businessId]
+  );
+  const tenantId = result.rows[0]?.tenant_id;
+  if (!tenantId) return null;
+  return getBusinessAccountByTenantId(String(tenantId));
+}
+
+export async function listBusinessAccounts(): Promise<BusinessAccount[]> {
+  if (!hasDatabaseConfig()) {
+    return Array.from(memoryStore.accounts.values());
+  }
+
+  await ensureBusinessAuthSchema();
+  const pool = getPool();
+  const result = await pool.query("SELECT tenant_id FROM business_accounts ORDER BY created_at DESC;");
+  const accounts = await Promise.all(
+    result.rows.map((row) => getBusinessAccountByTenantId(String(row.tenant_id)))
+  );
+  return accounts.filter((a): a is BusinessAccount => Boolean(a));
+}
+
+export interface CreateBusinessAccountAdminInput {
+  businessName: string;
+  businessModelId: string;
+  agentCount?: number;
+  selectedPlan?: string;
+  selectedIntegration?: string;
+  subscriptionStatus?: string;
+}
+
+export async function createBusinessAccountFromAdmin(input: CreateBusinessAccountAdminInput): Promise<BusinessAccount> {
+  // TODO: Implement actual DB insert logic here
+  // This is a stub for demonstration
+  return {
+    tenantId: "demo-tenant-id",
+    businessName: input.businessName,
+    businessModelId: input.businessModelId,
+    agentCount: input.agentCount ?? 1,
+    selectedPlan: input.selectedPlan ?? "basic",
+    selectedIntegration: input.selectedIntegration ?? "none",
+    subscriptionStatus: input.subscriptionStatus ?? "trial",
+    // ...add other required BusinessAccount fields with defaults or nulls
+  } as BusinessAccount;
+}
+
+export async function updateBusinessAccountProfile(): Promise<BusinessAccount | null> {
+  return null;
+}
+
+export async function createBusinessPasswordResetToken(): Promise<null> {
+  return null;
+}
+
+export async function resetBusinessPassword(): Promise<boolean> {
+  return false;
+}

@@ -90,6 +90,7 @@ export interface TenantConfig {
   businessModelId: BusinessModelId;
   businessModelName: string;
   overview: string;
+  openingLine?: string;
   primaryBusinessUnit: BusinessUnit;
   leadAgent: AgentProfile;
   departments: DepartmentProfile[];
@@ -101,6 +102,7 @@ export interface BusinessModelTemplate {
   name: string;
   summary: string;
   overview: string;
+  openingLine?: string;
   defaultPrimaryBusinessUnit: BusinessUnit;
   leadAgent: AgentProfile;
   departments: DepartmentProfile[];
@@ -789,6 +791,7 @@ export function buildTenantConfigFromBusiness(input: {
     businessModelId: template.id,
     businessModelName: template.name,
     overview: template.overview,
+    openingLine: template.openingLine,
     primaryBusinessUnit: template.defaultPrimaryBusinessUnit,
     leadAgent: template.leadAgent,
     departments: template.departments,
