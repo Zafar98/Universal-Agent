@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateBusiness, createBusinessSession } from "@/lib/businessAuthStore";
+import { demoUserExistsByEmail } from "@/lib/demoUserStore";
 import {
   buildDashboardSessionCookie,
   createAdminSessionToken,
@@ -9,26 +10,46 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const { identifier, password } = await request.json();
+    const normalizedIdentifier = String(identifier || "").trim();
+    const rawPassword = String(password || "");
+    const trimmedPassword = rawPassword.trim();
 
-    if (!identifier || !password) {
+    if (!normalizedIdentifier || !rawPassword) {
       return NextResponse.json(
         { error: "Email or phone and password are required" },
         { status: 400 }
       );
     }
 
-    if (isAdminCredentials(String(identifier), String(password))) {
+    if (isAdminCredentials(normalizedIdentifier, rawPassword)) {
       const response = NextResponse.json({ ok: true, admin: true });
       response.cookies.set(buildDashboardSessionCookie(createAdminSessionToken()));
       return response;
     }
 
-    const account = await authenticateBusiness({
-      identifier: String(identifier),
-      password: String(password),
+    let account = await authenticateBusiness({
+      identifier: normalizedIdentifier,
+      password: rawPassword,
     });
 
+    if (!account && trimmedPassword !== rawPassword) {
+      account = await authenticateBusiness({
+        identifier: normalizedIdentifier,
+        password: trimmedPassword,
+      });
+    }
+
     if (!account) {
+      const looksLikeEmail = normalizedIdentifier.includes("@");
+      if (looksLikeEmail && (await demoUserExistsByEmail(normalizedIdentifier))) {
+        return NextResponse.json(
+          {
+            error:
+              "That email exists in Demo accounts. Use the Demo login flow, or sign up for a business dashboard account.",
+          },
+          { status: 401 }
+        );
+      }
       return NextResponse.json({ error: "Invalid email, phone, or password" }, { status: 401 });
     }
 

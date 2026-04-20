@@ -77,7 +77,7 @@ export default function SignupPage() {
     aiDisclosureAccepted: false,
   });
 
-  const chosenPlan = searchParams.get("plan") || "monthly_1999";
+  const chosenPlan = searchParams.get("plan") || "starter";
   const chosenIntegration = searchParams.get("integration") || "website-widget";
   const verificationState = searchParams.get("verification") || "";
 

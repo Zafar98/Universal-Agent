@@ -12,6 +12,12 @@ import {
   getTaskCompletionDirectiveForTenant,
 } from "@/lib/businessModels";
 
+export type CallHangupPolicy = {
+  minimumCallMs: number;
+  minimumUserTurns: number;
+  autoEndDelayMs: number;
+};
+
 const tenantConfigs: TenantConfig[] = [
   buildTenantConfigFromBusiness({
     tenantId: "developers-housing",
@@ -64,6 +70,38 @@ export function resolveTenantConfig(tenantId?: string): TenantConfig {
   }
 
   return tenantConfigs[0];
+}
+
+export function getCallHangupPolicyForTenant(tenant: TenantConfig | null): CallHangupPolicy {
+  if (!tenant) {
+    return {
+      minimumCallMs: 25000,
+      minimumUserTurns: 2,
+      autoEndDelayMs: 1600,
+    };
+  }
+
+  if (tenant.businessModelId === "healthcare") {
+    return {
+      minimumCallMs: 35000,
+      minimumUserTurns: 3,
+      autoEndDelayMs: 1800,
+    };
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return {
+      minimumCallMs: 32000,
+      minimumUserTurns: 3,
+      autoEndDelayMs: 1700,
+    };
+  }
+
+  return {
+    minimumCallMs: 25000,
+    minimumUserTurns: 2,
+    autoEndDelayMs: 1600,
+  };
 }
 
 export {

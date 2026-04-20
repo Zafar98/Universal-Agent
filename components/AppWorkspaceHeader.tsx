@@ -90,6 +90,18 @@ export function AppWorkspaceHeader() {
             <Link href="/admin" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
               Admin
             </Link>
+            <Link href="/" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
+              Test Call
+            </Link>
+            <Link href="/showcase/call" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
+              Demo call
+            </Link>
+            <Link href="/showcase/email" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
+              Demo Email
+            </Link>
+            <Link href="/how-to" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
+              How To Integrate
+            </Link>
           </nav>
         </div>
 

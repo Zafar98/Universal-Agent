@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getCallClosingLineForTenant, TenantConfig } from "@/lib/tenantConfig";
+import {
+  getCallClosingLineForTenant,
+  getCallHangupPolicyForTenant,
+  TenantConfig,
+} from "@/lib/tenantConfig";
 import { RoutingSource } from "@/lib/callRouting";
 import {
   extractCaseDataFromTranscript,
@@ -202,6 +206,7 @@ export function useVoiceCall() {
   const transcriptIndexRef = useRef<Map<string, number>>(new Map());
   const callStateRef = useRef<CallState | null>(null);
   const callStartedAtRef = useRef<string | null>(null);
+  const callStartedAtMsRef = useRef<number | null>(null);
   const logSentRef = useRef(false);
   const shouldAutoEndRef = useRef(false);
   const autoEndTimerRef = useRef<number | null>(null);
@@ -353,6 +358,22 @@ export function useVoiceCall() {
     }
   }, []);
 
+  const hasMetHangupGuardrails = useCallback(() => {
+    const tenant = tenantProfileRef.current;
+    const policy = getCallHangupPolicyForTenant(tenant);
+    const startedAtMs = callStartedAtMsRef.current || 0;
+    const callAgeMs = startedAtMs > 0 ? Date.now() - startedAtMs : 0;
+    const userTurns = (callStateRef.current?.transcript || []).filter(
+      (entry) => entry.speaker === "user" && entry.text.trim().length > 0
+    ).length;
+
+    return (
+      verificationPassedRef.current &&
+      callAgeMs >= policy.minimumCallMs &&
+      userTurns >= policy.minimumUserTurns
+    );
+  }, []);
+
   const endCall = useCallback(() => {
     if (endingInProgressRef.current) {
       return;
@@ -361,6 +382,7 @@ export function useVoiceCall() {
 
     const finalizeToIdle = () => {
       callStartedAtRef.current = null;
+      callStartedAtMsRef.current = null;
       logSentRef.current = false;
       tenantProfileRef.current = null;
       routingSourceRef.current = "front-door";
@@ -496,6 +518,7 @@ export function useVoiceCall() {
                 type: "response.create",
                 response: {
                   instructions: `The customer has explicitly confirmed all details. End the call now with this exact ending line: '${closingLine}'`,
+                  modalities: ["audio"],
                   output_modalities: ["audio"],
                 },
               });
@@ -558,6 +581,7 @@ export function useVoiceCall() {
                 response: {
                   instructions:
                     "Before continuing, verify identity now using the required factors for this business. Ask only for missing details and keep it brief.",
+                  modalities: ["audio"],
                   output_modalities: ["audio"],
                 },
               });
@@ -572,6 +596,7 @@ export function useVoiceCall() {
                 type: "response.create",
                 response: {
                   instructions: `The caller indicates the issue is resolved. Close the call now with this exact ending line: '${closingLine}'`,
+                  modalities: ["audio"],
                   output_modalities: ["audio"],
                 },
               });
@@ -623,18 +648,16 @@ export function useVoiceCall() {
 
             // Only arm auto-end when we are actually in a closure phase to avoid
             // mid-call phrases like "take care" or "have a good day" triggering hangup.
-            const inClosurePhase =
-              closureRequestedRef.current ||
-              confirmationCompletedRef.current ||
-              callStateRef.current?.confirmationPending === false &&
-                (transcript.includes("thank you for calling") ||
-                  transcript.includes("thanks for calling"));
+            const inClosurePhase = closureRequestedRef.current || confirmationCompletedRef.current;
 
             const closingPhraseDetected =
+              transcript.includes("thank you for calling") ||
+              transcript.includes("thanks for calling") ||
               transcript.includes("goodbye") ||
               /\bbye\b/.test(transcript);
 
-            shouldAutoEndRef.current = inClosurePhase && closingPhraseDetected;
+            shouldAutoEndRef.current =
+              inClosurePhase && closingPhraseDetected && hasMetHangupGuardrails();
 
             if (shouldAutoEndRef.current) {
               closureRequestedRef.current = false;
@@ -661,10 +684,11 @@ export function useVoiceCall() {
           if (shouldAutoEndRef.current) {
             shouldAutoEndRef.current = false;
             closureRequestedRef.current = false;
+            const policy = getCallHangupPolicyForTenant(tenantProfileRef.current);
 
             autoEndTimerRef.current = window.setTimeout(() => {
               endCall();
-            }, 700);
+            }, policy.autoEndDelayMs);
             break;
           }
 
@@ -698,6 +722,7 @@ export function useVoiceCall() {
                 type: "response.create",
                 response: {
                   instructions: `The call is not yet ready to close. ${missingPrompt} Ask for these specific details, then confirm with the customer before closing.`,
+                  modalities: ["audio"],
                   output_modalities: ["audio"],
                 },
               });
@@ -719,6 +744,7 @@ export function useVoiceCall() {
                 type: "response.create",
                 response: {
                   instructions: `Before closing, confirm these details with the customer. Say: "Let me confirm: ${summary} Is that all correct?" Listen for confirmation. Only after they explicitly confirm should you say goodbye and close the call.`,
+                  modalities: ["audio"],
                   output_modalities: ["audio"],
                 },
               });
@@ -746,6 +772,7 @@ export function useVoiceCall() {
               type: "response.create",
               response: {
                 instructions: `All required details are confirmed. End the call now with this exact ending line: '${closingLine}'`,
+                modalities: ["audio"],
                 output_modalities: ["audio"],
               },
             });
@@ -766,7 +793,7 @@ export function useVoiceCall() {
           break;
       }
     },
-    [appendTranscriptDelta, endCall, sendDataChannelEvent, upsertTranscript]
+    [appendTranscriptDelta, endCall, hasMetHangupGuardrails, sendDataChannelEvent, upsertTranscript]
   );
 
   const startCall = useCallback(async (options?: CallStartOptions) => {
@@ -794,6 +821,7 @@ export function useVoiceCall() {
         confirmationPending: false,
       });
       callStartedAtRef.current = new Date().toISOString();
+      callStartedAtMsRef.current = Date.now();
       logSentRef.current = false;
       verificationPassedRef.current = false;
       verificationFactorsRef.current = new Set();
@@ -813,9 +841,15 @@ export function useVoiceCall() {
       const audioElement = document.createElement("audio");
       audioElement.autoplay = true;
       audioElement.setAttribute("playsinline", "true");
+      audioElement.muted = false;
+      audioElement.volume = 1;
       audioElement.style.display = "none";
       document.body.appendChild(audioElement);
       remoteAudioRef.current = audioElement;
+      // Prime playback in the user-gesture call stack to avoid browser autoplay blocking.
+      audioElement.play().catch(() => {
+        // The actual remote stream is played again on track attach.
+      });
 
       routingSourceRef.current = "front-door";
       routingRationaleRef.current =
@@ -910,6 +944,7 @@ export function useVoiceCall() {
                 ? getCallClosingLineForTenant(tenantProfileRef.current)
                 : "Your request is complete. Thanks for calling. Take care. Goodbye."
             }'. Begin with fast verification first. Collect two identity factors, confirm verification once, classify intent, collect minimum details, complete the task, and end without filler. After verification is complete, never ask for verification again during this same request.`,
+            modalities: ["audio"],
             output_modalities: ["audio"],
           },
         });

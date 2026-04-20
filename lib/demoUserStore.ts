@@ -280,3 +280,27 @@ export async function activateSubscription(userId: string): Promise<void> {
     if (session.userId === userId) session.subscribed = true;
   }
 }
+
+export async function demoUserExistsByEmail(email: string): Promise<boolean> {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) {
+    return false;
+  }
+
+  if (hasDatabaseConfig()) {
+    await ensureSchema();
+    const pool = getPool();
+    const result = await pool.query("SELECT 1 FROM demo_users WHERE email = $1 LIMIT 1", [
+      normalizedEmail,
+    ]);
+    return result.rows.length > 0;
+  }
+
+  for (const user of memUsers.values()) {
+    if (user.email === normalizedEmail) {
+      return true;
+    }
+  }
+
+  return false;
+}

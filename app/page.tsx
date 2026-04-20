@@ -1,13 +1,5 @@
-"use client";
-
-import { HomepageTestExperience } from "@/components/HomepageTrialExperience";
-import { AutonomyDemoFeed } from "@/components/AutonomyDemoFeed";
+import { LandingPage } from "@/components/LandingPage";
 
 export default function Home() {
-  return (
-    <>
-      <HomepageTestExperience />
-      <AutonomyDemoFeed />
-    </>
-  );
+  return <LandingPage />;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useVoiceCall } from "@/lib/useVoiceCall";
 
-const TRIAL_SECONDS = 120;
+const TRIAL_SECONDS = 60;
 
 /** Derive a lightweight browser fingerprint without any third-party library. */
 function computeFingerprint(): string {
@@ -27,7 +27,7 @@ type AuthState =
   | { kind: "unauthenticated" }
   | { kind: "authenticated"; email: string; hasUsedDemo: boolean; subscribed: boolean };
 
-type BusinessOption = { id: string; name: string; summary: string };
+type BusinessOption = { id: string; tenantId: string; name: string; summary: string };
 type TrialStatus = {
   blocked: boolean;
   reason?: string;
@@ -477,6 +477,7 @@ export default function DemoPage() {
       .then((data) => {
         const list: BusinessOption[] = (data.businessModels || []).map((m: BusinessOption) => ({
           id: m.id,
+          tenantId: m.tenantId,
           name: m.name,
           summary: m.summary,
         }));
@@ -562,14 +563,19 @@ export default function DemoPage() {
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleStartCall = async () => {
-    if (!isSubscribed) {
+    if (!isSubscribed && (deviceBlocked || trialSecondsLeft <= 0)) {
       setCallPhase("ended");
+      return;
+    }
+
+    const activeBusiness = businesses.find((business) => business.id === selectedBusinessId);
+    if (!activeBusiness) {
       return;
     }
 
     setCallPhase("active");
     await startCall({
-      tenantId: selectedBusinessId,
+      tenantId: activeBusiness.tenantId,
       isDemoCall: true,
       fingerprint,
     } as Parameters<typeof startCall>[0]);

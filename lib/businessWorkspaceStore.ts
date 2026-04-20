@@ -22,6 +22,7 @@ async function ensureBusinessWorkspaceSchema(): Promise<void> {
       business_model_id TEXT NOT NULL,
       business_model_name TEXT NOT NULL,
       overview TEXT NOT NULL,
+      opening_line TEXT,
       primary_business_unit TEXT NOT NULL,
       lead_agent_json JSONB NOT NULL,
       departments_json JSONB NOT NULL,
@@ -31,6 +32,7 @@ async function ensureBusinessWorkspaceSchema(): Promise<void> {
     );
   `);
   await pool.query(`ALTER TABLE business_workspaces ADD COLUMN IF NOT EXISTS workflow_playbook_json JSONB NOT NULL DEFAULT '[]'::jsonb;`);
+  await pool.query(`ALTER TABLE business_workspaces ADD COLUMN IF NOT EXISTS opening_line TEXT;`);
   schemaInitialized = true;
 }
 
@@ -58,6 +60,7 @@ export async function getBusinessWorkspace(tenantId: string): Promise<BusinessWo
     businessModelId: row.business_model_id,
     businessModelName: row.business_model_name,
     overview: row.overview,
+    openingLine: row.opening_line || undefined,
     primaryBusinessUnit: row.primary_business_unit,
     leadAgent: row.lead_agent_json,
     departments: Array.isArray(row.departments_json) ? row.departments_json : [],
@@ -84,14 +87,15 @@ export async function upsertBusinessWorkspace(workspace: BusinessWorkspace): Pro
     `
       INSERT INTO business_workspaces (
         tenant_id, business_name, business_model_id, business_model_name, overview,
-        primary_business_unit, lead_agent_json, departments_json, workflow_playbook_json, created_at, updated_at
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        opening_line, primary_business_unit, lead_agent_json, departments_json, workflow_playbook_json, created_at, updated_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       ON CONFLICT (tenant_id)
       DO UPDATE SET
         business_name = EXCLUDED.business_name,
         business_model_id = EXCLUDED.business_model_id,
         business_model_name = EXCLUDED.business_model_name,
         overview = EXCLUDED.overview,
+        opening_line = EXCLUDED.opening_line,
         primary_business_unit = EXCLUDED.primary_business_unit,
         lead_agent_json = EXCLUDED.lead_agent_json,
         departments_json = EXCLUDED.departments_json,
@@ -104,6 +108,7 @@ export async function upsertBusinessWorkspace(workspace: BusinessWorkspace): Pro
       normalized.businessModelId,
       normalized.businessModelName,
       normalized.overview,
+      normalized.openingLine || null,
       normalized.primaryBusinessUnit,
       JSON.stringify(normalized.leadAgent),
       JSON.stringify(normalized.departments),

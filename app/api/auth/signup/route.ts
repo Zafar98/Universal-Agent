@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       businessName: normalizedBusinessName,
       businessModelId: defaultBusinessModelId,
       agentCount: 1,
-      selectedPlan: String(selectedPlan || "monthly_1999"),
+      selectedPlan: String(selectedPlan || "starter"),
       selectedIntegration: String(selectedIntegration || "website-widget"),
       verificationMethod: "email",
       email: String(email),

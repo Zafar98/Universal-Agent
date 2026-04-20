@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -50,45 +51,78 @@ const INTEGRATIONS = [
 
 const PLANS = [
   {
-    name: "monthly_1999",
-    label: "Asistoria Full Access",
-    price: "£1,999/month",
-    subtitle: "One all-inclusive subscription for full deployment",
-    tone: "#06b6d4",
+    name: "starter",
+    label: "Starter",
+    price: "£399/month",
+    subtitle: "Email automation for lean teams",
+    tone: "#38bdf8",
     features: [
-      "Unlimited business lines",
-      "Unlimited call minutes",
-      "Agent build and onboarding implementation",
-      "Workflow automation and ticketing",
-      "Live call logs and transcripts dashboard",
-      "Maintenance layer: uptime, bug fixes, response optimisation",
-      "Up to 2 small updates per month",
-      "Admin-managed agent changes with request flow",
-      "Priority support",
+      "Email-only AI automation",
+      "500 emails per month included",
+      "2 AI agents/departments",
+      "Basic setup guidance",
+      "Email support",
+    ],
+    limits: ["No voice calls or SMS", "No API/webhook integrations"],
+    popular: false,
+  },
+  {
+    name: "growth",
+    label: "Growth",
+    price: "£599/month",
+    subtitle: "Live voice and routing for scaling operations",
+    tone: "#22d3ee",
+    features: [
+      "Everything in Starter",
+      "300 live voice calls per month",
+      "1,000 voice minutes per month",
+      "2,000 emails per month",
+      "Up to 5 AI agents/departments",
+      "Website widget and phone-number routing",
+      "Priority response support",
+    ],
+    limits: ["No SMS on Growth", "No custom API/webhook integrations"],
+    popular: true,
+  },
+  {
+    name: "enterprise",
+    label: "Enterprise",
+    price: "£999/month",
+    subtitle: "Full omnichannel deployment and advanced controls",
+    tone: "#0ea5e9",
+    features: [
+      "Everything in Growth",
+      "1,000 live voice calls per month",
+      "5,000 voice minutes per month",
+      "10,000 emails and 2,000 SMS per month",
+      "API and webhook orchestration",
+      "Multi-site deployment",
+      "Dedicated implementation support",
     ],
     limits: [],
-    popular: true,
+    popular: false,
   },
 ];
 
 export default function SubscriptionPage() {
   const router = useRouter();
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+  const [showHint, setShowHint] = useState(false);
 
   function handleChoosePlan(planName: string) {
     if (!selectedIntegration) {
+      setShowHint(true);
       const el = document.getElementById("integration-picker");
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "2px solid #22d3ee";
-        setTimeout(() => { el.style.outline = ""; }, 1400);
       }
       return;
     }
+    setShowHint(false);
     router.push(`/signup?plan=${encodeURIComponent(planName)}&integration=${encodeURIComponent(selectedIntegration)}`);
   }
 
-  const selectedIntegrationData = INTEGRATIONS.find((i) => i.id === selectedIntegration);
+  const selectedIntegrationData = INTEGRATIONS.find((i) => i.id === selectedIntegration) ?? null;
 
   return (
     <div
@@ -106,14 +140,34 @@ export default function SubscriptionPage() {
         {/* Page header */}
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <div style={{ color: "#67e8f9", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: "10px" }}>
-            Single Subscription
+            Subscription
           </div>
           <h1 style={{ margin: "0 0 12px", fontSize: "42px", color: "#e0f2fe", fontWeight: 900, letterSpacing: "-0.02em" }}>
             One plan. Full Asistoria deployment.
           </h1>
           <p style={{ color: "#cbd5e1", maxWidth: "700px", margin: "0 auto", lineHeight: 1.55 }}>
-            Complete two steps: pick how customers reach your agent, then activate the single £1,999/month plan.
+            Choose how customers reach your agent, then activate the single monthly subscription. Everything is included.
           </p>
+          <div style={{ marginTop: "12px" }}>
+            <Link
+              href="/how-to"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                textDecoration: "none",
+                color: "#fde68a",
+                fontSize: "13px",
+                fontWeight: 700,
+                border: "1px solid rgba(251,191,36,0.35)",
+                background: "rgba(120,53,15,0.18)",
+                padding: "7px 14px",
+                borderRadius: "999px",
+              }}
+            >
+              Read the full integration guide →
+            </Link>
+          </div>
         </div>
 
         {/* Step 1 — Integration method */}
@@ -153,7 +207,7 @@ export default function SubscriptionPage() {
                 <button
                   key={integration.id}
                   type="button"
-                  onClick={() => setSelectedIntegration(integration.id)}
+                  onClick={() => { setSelectedIntegration(integration.id); setShowHint(false); }}
                   style={{
                     textAlign: "left",
                     borderRadius: "18px",
@@ -225,7 +279,22 @@ export default function SubscriptionPage() {
             })}
           </div>
 
-          {!selectedIntegration && (
+          {showHint ? (
+            <div
+              style={{
+                marginTop: "12px",
+                textAlign: "center",
+                color: "#fca5a5",
+                fontSize: "13px",
+                border: "1px solid rgba(239,68,68,0.35)",
+                background: "rgba(127,29,29,0.22)",
+                borderRadius: "10px",
+                padding: "8px 12px",
+              }}
+            >
+              Please select an integration method above before continuing.
+            </div>
+          ) : !selectedIntegration ? (
             <div
               style={{
                 marginTop: "14px",
@@ -236,7 +305,7 @@ export default function SubscriptionPage() {
             >
               ↑ Select an integration method above before choosing a plan.
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Step 2 — Pricing plans */}

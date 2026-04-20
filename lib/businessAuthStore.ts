@@ -116,7 +116,7 @@ function normalizePlanTier(value?: string): PlanTier {
   ) {
     return normalized === "monthly" ? "monthly_1999" : normalized;
   }
-  return "monthly_1999";
+  return "starter";
 }
 
 function normalizeIntegrationMethod(value?: string): IntegrationMethod {

@@ -17,6 +17,7 @@ import {
   getTrialWindowStatus,
   startOrResumeTrialWindow,
 } from "@/lib/trialTrackingStore";
+import { validateVoiceCall } from "@/lib/usageValidation";
 
 function isIntegrationReadyForAccount(account: {
   selectedIntegration: string;
@@ -27,6 +28,9 @@ function isIntegrationReadyForAccount(account: {
     webhookSecret?: string;
   };
 }): boolean {
+  if (account.selectedIntegration === "email-automation") {
+    return true;
+  }
   if (account.selectedIntegration === "website-widget") {
     return Boolean(account.integrationConfig.widgetEmbedCode);
   }
@@ -47,10 +51,28 @@ export async function POST(request: NextRequest) {
 
     const session = await getAuthenticatedBusinessFromRequest(request);
     const body = await request.json().catch(() => ({}));
+    const demoMode = (process.env.DEMO_MODE || "live").toLowerCase();
 
     // ─── Demo user gate ───────────────────────────────────────────────────────
     const isDemoRequest = Boolean(body.isDemoCall);
     if (isDemoRequest) {
+      if (demoMode === "disabled") {
+        return NextResponse.json(
+          { error: "Demo calls are currently disabled." },
+          { status: 403 }
+        );
+      }
+
+      if (demoMode === "simulation") {
+        return NextResponse.json(
+          {
+            error:
+              "Live demo calls are disabled in simulation mode. Use the on-page simulation preview instead.",
+          },
+          { status: 403 }
+        );
+      }
+
       const demoCookie = request.cookies.get(DEMO_COOKIE_NAME)?.value || "";
       const demoSession = await getDemoSession(demoCookie);
 
@@ -87,10 +109,37 @@ export async function POST(request: NextRequest) {
     // ─────────────────────────────────────────────────────────────────────────
 
     const requestedTenantId = String(body.tenantId || request.nextUrl.searchParams.get("tenantId") || "") || undefined;
-    const account = requestedTenantId ? await getBusinessAccountByTenantId(requestedTenantId) : null;
+    const lookupTenantId = requestedTenantId || session?.tenantId;
+    const account = lookupTenantId ? await getBusinessAccountByTenantId(lookupTenantId) : null;
     if (account) {
       const billingReady = account.subscriptionStatus === "trialing" || account.subscriptionStatus === "active";
       const integrationReady = isIntegrationReadyForAccount(account);
+
+      if (String(account.selectedPlan || "").toLowerCase() === "starter") {
+        return NextResponse.json(
+          {
+            error: "Starter plan includes email automation only. Voice calls and SMS are not available on Starter.",
+            upgradeRequired: true,
+            selectedPlan: account.selectedPlan,
+          },
+          { status: 403 }
+        );
+      }
+
+      // Validate usage limits for non-demo calls
+      if (!isDemoRequest && account.subscriptionStatus === "active") {
+        const usageValidation = await validateVoiceCall(account.tenantId);
+        if (!usageValidation.allowed) {
+          return NextResponse.json(
+            {
+              error: usageValidation.reason || "Usage limit exceeded",
+              upgradeRequired: usageValidation.reason?.includes("Starter plan") || false,
+              usageValidation,
+            },
+            { status: 429 }
+          );
+        }
+      }
 
       if (!billingReady || !integrationReady) {
         return NextResponse.json(
@@ -153,6 +202,7 @@ export async function POST(request: NextRequest) {
           type: "realtime",
           model: "gpt-realtime",
           instructions: realtimeInstructions,
+          modalities: ["audio"],
           output_modalities: ["audio"],
           audio: {
             input: {

@@ -60,3 +60,49 @@ export async function sendVerificationCode(input: {
     message: "Email delivery is not configured, using preview code instead.",
   };
 }
+
+export async function sendPasswordResetEmail(input: {
+  businessName: string;
+  email: string;
+  resetUrl: string;
+}): Promise<VerificationDeliveryResult> {
+  if (!input.email) {
+    return {
+      delivered: false,
+      channel: "preview",
+      message: "No email was provided for password reset delivery.",
+    };
+  }
+
+  if (!canSendEmail()) {
+    return {
+      delivered: false,
+      channel: "preview",
+      message: "Email delivery is not configured, using preview reset link instead.",
+    };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USERNAME,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM_EMAIL,
+    to: input.email,
+    subject: `${input.businessName} password reset`,
+    text: `Use this link to reset your password: ${input.resetUrl}\n\nThis link expires in 30 minutes.`,
+    html: `<div style="font-family:Arial,sans-serif;line-height:1.5"><h2>Reset your password</h2><p>Click the button below to reset your account password.</p><p style="margin:20px 0"><a href="${input.resetUrl}" style="display:inline-block;padding:12px 18px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Reset password</a></p><p>If the button does not work, use this link:</p><p><a href="${input.resetUrl}">${input.resetUrl}</a></p><p>This link expires in 30 minutes.</p></div>`,
+  });
+
+  return {
+    delivered: true,
+    channel: "email",
+    message: `Password reset email sent to ${input.email}.`,
+  };
+}
