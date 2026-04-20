@@ -152,6 +152,83 @@ const SCENARIOS: CallScenario[] = [
       { id: "resolve", icon: "🟢", label: "Order dispatched — no staff involved", detail: "Status: Order dispatched · Closed by: Autonomy Engine" },
     ],
   },
+  {
+    id: "energy-outage",
+    businessType: "⚡ Energy",
+    businessName: "City Energy",
+    callerName: "Amir Patel",
+    issue: "No electricity at home since 18:20",
+    issueType: "Power Outage",
+    ticketId: "TKT-51022",
+    urgency: "high",
+    staffRequired: true,
+    staffReason: "Vulnerability flag raised — network duty team escalated",
+    steps: [
+      { id: "log", icon: "✅", label: "Call completed & transcript saved", detail: "Duration: 2m 05s · Verification: Name + postcode" },
+      { id: "extract", icon: "🧠", label: "Outage data extracted", detail: "Address captured · Outage start: 18:20 · Supply type: Electric" },
+      { id: "ticket", icon: "🎫", label: "Incident ticket created", detail: "#TKT-51022 · Priority: 🔴 High · Queue: Network Ops" },
+      { id: "sms", icon: "📱", label: "SMS status update sent", detail: '"We are investigating your outage. Ref: TKT-51022. Next update within 30 minutes."' },
+      { id: "dispatch", icon: "🛠️", label: "Duty engineer dispatch check triggered", detail: "Nearest crew identified · ETA pending control-room confirmation" },
+      { id: "escalate", icon: "🔴", label: "Live escalation triggered", detail: "Vulnerability and widespread-fault indicators detected", isEscalation: true },
+    ],
+  },
+  {
+    id: "energy-billing",
+    businessType: "⚡ Energy",
+    businessName: "City Energy",
+    callerName: "Sarah Bennett",
+    issue: "Unexpectedly high monthly bill",
+    issueType: "Billing Query",
+    ticketId: "TKT-51039",
+    urgency: "medium",
+    staffRequired: false,
+    steps: [
+      { id: "log", icon: "✅", label: "Call completed & transcript saved", detail: "Duration: 2m 24s · Verified: Account reference + postcode" },
+      { id: "extract", icon: "🧠", label: "Billing data extracted", detail: "Invoice period, meter read date, and disputed amount captured" },
+      { id: "ticket", icon: "🎫", label: "Billing case created", detail: "#TKT-51039 · Status: Open · Billing specialist assigned" },
+      { id: "sms", icon: "📱", label: "SMS summary sent", detail: '"Your billing review is logged. Ref: TKT-51039. We will update you within 1 working day."' },
+      { id: "email", icon: "📧", label: "Case confirmation email sent", detail: "To: sarah.bennett@email.com · Includes charge breakdown checklist" },
+      { id: "resolve", icon: "🟢", label: "Case queued automatically — no staff handoff call needed", detail: "Status: Billing review queued · Closed by: Autonomy Engine" },
+    ],
+  },
+  {
+    id: "council-waste",
+    businessType: "🏛️ Borough Council",
+    businessName: "Rivergate Borough Council",
+    callerName: "Helen Morris",
+    issue: "Missed recycling collection on my street",
+    issueType: "Waste Report",
+    ticketId: "TKT-62014",
+    urgency: "low",
+    staffRequired: false,
+    steps: [
+      { id: "log", icon: "✅", label: "Call completed & transcript saved", detail: "Duration: 1m 52s · Verified: Name + postcode" },
+      { id: "extract", icon: "🧠", label: "Service report extracted", detail: "Location, collection type, and scheduled date captured" },
+      { id: "ticket", icon: "🎫", label: "Council job created", detail: "#TKT-62014 · Service: Waste Operations · Priority: Standard" },
+      { id: "sms", icon: "📱", label: "Resident SMS sent", detail: '"Your missed collection report is logged. Ref: TKT-62014. Update expected within 2 working days."' },
+      { id: "email", icon: "📧", label: "Case email confirmation sent", detail: "To: helen.morris@email.com · Includes service standards and contact route" },
+      { id: "resolve", icon: "🟢", label: "Request routed automatically — no staff involved", detail: "Status: Scheduled for operations review · Closed by: Autonomy Engine" },
+    ],
+  },
+  {
+    id: "council-safeguarding",
+    businessType: "🏛️ Borough Council",
+    businessName: "Rivergate Borough Council",
+    callerName: "Liam Ford",
+    issue: "Concern about vulnerable neighbour in immediate distress",
+    issueType: "Safeguarding Concern",
+    ticketId: "TKT-62033",
+    urgency: "high",
+    staffRequired: true,
+    staffReason: "Urgent safeguarding threshold met — duty officer alerted",
+    steps: [
+      { id: "log", icon: "✅", label: "Call completed & transcript saved", detail: "Duration: 1m 36s · Urgent risk language detected" },
+      { id: "extract", icon: "🧠", label: "Incident details extracted", detail: "Location, risk indicator, and immediate safety context captured" },
+      { id: "ticket", icon: "🎫", label: "Safeguarding incident logged", detail: "#TKT-62033 · Priority: 🔴 Critical · Duty queue assigned" },
+      { id: "sms", icon: "📱", label: "Caller reassurance SMS sent", detail: '"Your urgent concern has been escalated to the duty team. Ref: TKT-62033."' },
+      { id: "escalate", icon: "🔴", label: "Duty officer escalation triggered", detail: "Live safeguarding handoff opened with incident notes", isEscalation: true },
+    ],
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -160,6 +237,8 @@ const BUSINESS_TABS = [
   { id: "🏠 Housing", label: "🏠 Housing" },
   { id: "🏨 Hotel", label: "🏨 Hotel" },
   { id: "🍽️ Restaurant", label: "🍽️ Restaurant" },
+  { id: "⚡ Energy", label: "⚡ Energy" },
+  { id: "🏛️ Borough Council", label: "🏛️ Borough Council" },
 ];
 
 const STEP_DELAY_MS = 900;
@@ -637,7 +716,7 @@ export function AutonomyDemoFeed() {
             }}
           >
             <span style={{ fontSize: "12px", color: "#7dd3fc", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-              Live Post-Call Automation
+              Example Post-Call Automations
             </span>
             <span
               style={{
@@ -681,7 +760,7 @@ export function AutonomyDemoFeed() {
               margin: "0 auto",
             }}
           >
-            When a call ends, the AI automatically handles the entire back-office workflow —
+            These example scenarios show how the AI can handle the full back-office workflow after a call —
             SMS, email, contractor dispatch, and system updates — with no staff needed.
           </p>
         </div>
@@ -812,7 +891,7 @@ export function AutonomyDemoFeed() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ color: "#475569", fontSize: "13px" }}>
-              Auto-rotates every 14s · Click tabs to explore
+              Example scenarios auto-rotate every 14s · Click tabs to explore
             </span>
           </div>
         </div>

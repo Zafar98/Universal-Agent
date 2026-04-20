@@ -19,9 +19,14 @@ const tenantConfigs: TenantConfig[] = [
     businessModelId: "housing-association",
   }),
   buildTenantConfigFromBusiness({
-    tenantId: "city-utilities",
-    businessName: "City Utilities",
+    tenantId: "city-energy",
+    businessName: "City Energy",
     businessModelId: "utilities",
+  }),
+  buildTenantConfigFromBusiness({
+    tenantId: "rivergate-borough-council",
+    businessName: "Rivergate Borough Council",
+    businessModelId: "borough-council",
   }),
   buildTenantConfigFromBusiness({
     tenantId: "acme-health",

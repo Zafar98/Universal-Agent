@@ -15,6 +15,14 @@ export function getOpeningLineForTenant(tenant: TenantConfig): string {
     return "Sunset Bistro bookings and orders, what can I prepare for you today?";
   }
 
+  if (tenant.businessModelId === "utilities") {
+    return "City Energy support desk, how can I help with your supply or account today?";
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return "Borough Council support line, how can I help with your council service today?";
+  }
+
   return "How can I help you today?";
 }
 export type BusinessModelId =
@@ -23,7 +31,8 @@ export type BusinessModelId =
   | "hotel"
   | "concierge"
   | "utilities"
-  | "healthcare";
+  | "healthcare"
+  | "borough-council";
 
 export type BusinessUnit =
   | "Repairs"
@@ -61,6 +70,8 @@ export const SUPPORTED_REALTIME_VOICES = [
 ] as const;
 
 export type RealtimeVoice = (typeof SUPPORTED_REALTIME_VOICES)[number];
+const BRITISH_DEFAULT_REALTIME_VOICE: RealtimeVoice = "ash";
+const BRITISH_APPROVED_VOICES: ReadonlySet<RealtimeVoice> = new Set(["ash", "cedar", "marin"]);
 
 export interface DepartmentProfile {
   id: string;
@@ -483,18 +494,18 @@ const businessModelTemplates: BusinessModelTemplate[] = [
   },
   {
     id: "utilities",
-    name: "Utilities",
+    name: "Energy Provider",
     summary:
       "Supports outages, billing, account changes, and safety-led field dispatch.",
     overview:
-      "Built for utility providers that need fast classification across outages, billing, and account services.",
+      "Built for UK energy providers that need fast classification across outages, billing, and account services.",
     defaultPrimaryBusinessUnit: "General Support",
     leadAgent: {
       name: "Jordan",
-      role: "Utility Operations Agent",
+      role: "Energy Operations Agent",
       objective:
         "Identify supply issues quickly, reassure callers, and route them to outage, billing, or account services.",
-      voiceStyle: "Calm under pressure, direct, informative",
+      voiceStyle: "Calm under pressure, direct, informative, UK service-desk tone",
       realtimeVoice: "marin",
     },
     departments: [
@@ -524,7 +535,7 @@ const businessModelTemplates: BusinessModelTemplate[] = [
         agentName: "Marcus",
         purpose: "Handles move-ins, move-outs, meter readings, and ownership changes.",
         queueTarget: "Account Services",
-        realtimeVoice: "echo",
+        realtimeVoice: "ash",
         supportedCalls: ["Move home", "Meter reading", "Account setup", "Ownership changes"],
         escalationRules: ["Potential fraud", "Complex multi-property case"],
       },
@@ -556,6 +567,113 @@ const businessModelTemplates: BusinessModelTemplate[] = [
           "Open account-service order and send completion checklist.",
         ],
         handoffPayloadFields: ["account_name", "property_address", "effective_date", "meter_readings", "contact_preference"],
+      },
+    ],
+  },
+  {
+    id: "borough-council",
+    name: "Borough Council",
+    summary:
+      "Handles council tax, housing and benefits, waste and streets, licensing, and formal complaints.",
+    overview:
+      "Built for borough councils that need a clear UK public-service front door for resident enquiries and escalations.",
+    defaultPrimaryBusinessUnit: "General Support",
+    leadAgent: {
+      name: "Hannah",
+      role: "Council Services Front-Door Agent",
+      objective:
+        "Triage resident enquiries quickly, collect required details, and route to the right council service with clear next steps.",
+      voiceStyle: "Professional, respectful, plain-English UK public-service tone",
+      realtimeVoice: "ash",
+    },
+    departments: [
+      {
+        id: "council-tax-revenues",
+        name: "Council Tax & Revenues",
+        agentName: "Oliver",
+        purpose: "Handles council tax bills, payment support, account updates, and arrears contact guidance.",
+        queueTarget: "Revenues Team",
+        realtimeVoice: "ash",
+        supportedCalls: ["Council tax bill query", "Payment support", "Payment plan request", "Account change"],
+        escalationRules: ["Enforcement dispute", "Financial vulnerability", "High-balance complaint"],
+      },
+      {
+        id: "council-housing-benefits",
+        name: "Housing & Benefits",
+        agentName: "Amelia",
+        purpose: "Handles social housing enquiries, homelessness contact routing, and benefits status support.",
+        queueTarget: "Housing & Benefits Team",
+        realtimeVoice: "cedar",
+        supportedCalls: ["Housing enquiry", "Benefits status", "Council housing application", "Temporary accommodation support"],
+        escalationRules: ["Homelessness risk", "Safeguarding concern", "Urgent vulnerability"],
+      },
+      {
+        id: "council-environment",
+        name: "Waste, Streets & Environment",
+        agentName: "Isaac",
+        purpose: "Handles missed collections, fly-tipping reports, street lighting issues, and environmental incidents.",
+        queueTarget: "Environment Operations",
+        realtimeVoice: "marin",
+        supportedCalls: ["Missed bin collection", "Fly-tipping report", "Street light fault", "Pest or environmental report"],
+        escalationRules: ["Public health risk", "Road safety hazard", "Repeat unresolved incident"],
+      },
+      {
+        id: "council-licensing",
+        name: "Licensing & Permits",
+        agentName: "Grace",
+        purpose: "Handles resident permits, business licensing enquiries, and event or venue permit support.",
+        queueTarget: "Licensing Team",
+        realtimeVoice: "ash",
+        supportedCalls: ["Resident permit", "Parking permit", "Business licence", "Event permit enquiry"],
+        escalationRules: ["Regulatory complaint", "Urgent permit deadline", "Complex multi-department case"],
+      },
+      {
+        id: "council-complaints",
+        name: "General Enquiries & Complaints",
+        agentName: "Noah",
+        purpose: "Handles switchboard-style routing, service dissatisfaction capture, and formal complaint intake.",
+        queueTarget: "Customer Contact Centre",
+        realtimeVoice: "cedar",
+        supportedCalls: ["General enquiry", "Service complaint", "Department routing", "Follow-up request"],
+        escalationRules: ["Formal stage-two complaint", "Member or ombudsman contact", "Threatening behaviour"],
+      },
+    ],
+    workflowPlaybook: [
+      {
+        callType: "Council tax account or bill query",
+        tasks: [
+          "Verify resident identity and property address before discussing account details.",
+          "Capture the bill period, disputed amount, and payment status.",
+          "Create a revenues case with clear next-step timeline and reference.",
+        ],
+        handoffPayloadFields: ["resident_name", "service_address", "account_reference", "billing_period", "dispute_summary"],
+      },
+      {
+        callType: "Missed collection or environmental report",
+        tasks: [
+          "Collect full location, issue category, and first-observed time.",
+          "Check for immediate public safety or health risk indicators.",
+          "Create an environment job and provide reference plus expected update window.",
+        ],
+        handoffPayloadFields: ["reporter_name", "location", "issue_category", "observed_time", "risk_flag"],
+      },
+      {
+        callType: "Housing or benefits status enquiry",
+        tasks: [
+          "Verify identity and capture the housing or benefits reference if available.",
+          "Summarize current request stage and urgent needs in plain language.",
+          "Route to housing and benefits queue with callback target details.",
+        ],
+        handoffPayloadFields: ["resident_name", "reference_number", "request_type", "urgency", "callback_contact"],
+      },
+      {
+        callType: "Urgent safeguarding or public-safety concern",
+        tasks: [
+          "Collect minimum required details and location immediately.",
+          "If life-threatening, instruct caller to contact 999 without delay.",
+          "Escalate to safeguarding or duty officer channels and confirm action taken.",
+        ],
+        handoffPayloadFields: ["caller_name", "incident_location", "risk_type", "emergency_services_contacted", "escalation_owner"],
       },
     ],
   },
@@ -684,7 +802,11 @@ export function isSupportedRealtimeVoice(value: string): value is RealtimeVoice 
 
 export function normalizeRealtimeVoice(value?: string): RealtimeVoice {
   const candidate = String(value || "").toLowerCase();
-  return isSupportedRealtimeVoice(candidate) ? candidate : "marin";
+  if (!isSupportedRealtimeVoice(candidate)) {
+    return BRITISH_DEFAULT_REALTIME_VOICE;
+  }
+
+  return BRITISH_APPROVED_VOICES.has(candidate) ? candidate : BRITISH_DEFAULT_REALTIME_VOICE;
 }
 
 export function getVerificationPolicyForTenant(tenant: TenantConfig): string {
@@ -698,6 +820,10 @@ export function getVerificationPolicyForTenant(tenant: TenantConfig): string {
 
   if (tenant.businessModelId === "concierge") {
     return "Verification standard: collect room number and guest surname. For safety or medical emergencies, skip verification and act immediately — never delay assistance for identity checks.";
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return "Verification standard: collect exactly 2 factors before account-specific support (full name plus postcode, or account reference plus postcode). For safeguarding or immediate public-safety concerns, skip verification and escalate immediately.";
   }
 
   return "Verification standard: collect at least 2 factors (for example name + phone/account reference, or booking reference + surname) and explicitly confirm verification succeeded.";
@@ -720,6 +846,14 @@ export function getTaskCompletionDirectiveForTenant(tenant: TenantConfig): strin
     return "Restaurant directive: once the caller states the request, complete the reservation or order with a final read-back (time or items, name, and contact); then end the call.";
   }
 
+  if (tenant.businessModelId === "utilities") {
+    return "Energy-provider directive: once the caller states the reason, classify as outage, billing, or account service; collect minimum required details; create and confirm a case reference; then end the call.";
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return "Borough-council directive: once the caller states the council service needed, route to the correct department, capture required facts, confirm case reference and timeline, and avoid legal advice; then end the call.";
+  }
+
   return "Task directive: once the caller states the reason, collect minimum details, complete the operational task, confirm completion, then end the call.";
 }
 
@@ -738,6 +872,14 @@ export function getCallClosingLineForTenant(tenant: TenantConfig): string {
 
   if (tenant.businessModelId === "restaurant") {
     return "Your reservation or order is confirmed. Thank you for calling Sunset Bistro. Goodbye.";
+  }
+
+  if (tenant.businessModelId === "utilities") {
+    return "Your energy request is now logged and in progress. Thank you for calling City Energy. Goodbye.";
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return "Your council request is now logged and in progress. Thank you for calling Borough Council. Goodbye.";
   }
 
   return "Your request is complete. Thanks for calling. Take care. Goodbye.";
@@ -800,7 +942,7 @@ export function buildDepartmentRoutingInstructions(tenant: TenantConfig): string
   const departmentLines = tenant.departments
     .map(
       (department) =>
-        `${department.name}: handled by ${department.agentName}. Voice model: ${department.realtimeVoice}. Scope: ${department.purpose}. Supported calls: ${department.supportedCalls.join(", ")}. Escalate when: ${department.escalationRules.join(", ")}.`
+        `${department.name}: handled by ${department.agentName}. Voice model: ${normalizeRealtimeVoice(department.realtimeVoice)}. Scope: ${department.purpose}. Supported calls: ${department.supportedCalls.join(", ")}. Escalate when: ${department.escalationRules.join(", ")}.`
     )
     .join("\n");
 
@@ -815,5 +957,5 @@ export function buildDepartmentRoutingInstructions(tenant: TenantConfig): string
   const completionDirective = getTaskCompletionDirectiveForTenant(tenant);
   const closingLine = getCallClosingLineForTenant(tenant);
   const openingLine = getOpeningLineForTenant(tenant);
-  return `You are the live voice agent for ${tenant.name}, a ${tenant.businessModelName} operation.\n\nYou are the front-door agent ${tenant.leadAgent.name}, whose job is to greet the caller, understand the need quickly, and route them into the correct department agent.\nFront-door voice model: ${tenant.leadAgent.realtimeVoice}.\n\nImportant behaviour rules:\n- Your first spoken sentence of every new call must be exactly: "${openingLine}"\n- Keep responses natural, short, and conversational.\n- Brevity rule: default to one short sentence (maximum 18 words).\n- If clarification is required, use at most two short sentences (maximum 30 words total).\n- Ask only one question at a time.\n- Do not list multiple options unless the caller asks for options.\n- Task-completion priority: identify intent, collect required details, perform the next action, confirm outcome, and close.\n- Turn budget: after verification, resolve most calls within 4 agent turns.\n- If enough details are already provided, do not ask extra questions; act and confirm.\n- As soon as the caller clearly states why they called, move straight to completion for this business type.\n- ${completionDirective}\n- Avoid exploratory chat, filler phrases, and repeated reassurance.\n- End each resolved call with a concrete next-step summary in one sentence.\n- Start every call with identity verification before account-specific help or transfers.\n- ${verificationPolicy}\n- If verification is incomplete or fails, do not transfer to a department agent and do not perform account-specific actions.\n- Stay within the scope of the chosen department once routed.\n- Do not answer with information from unrelated departments.\n- If the caller changes topic, acknowledge it briefly and reroute them to the correct department.\n- Confirm practical details needed for that department only.\n- Create or prepare a ticket, reservation, or order summary as appropriate for that department.\n- Mirror the caller's emotional state with empathy while remaining calm and professional.\n- Do not mention being an agent model, prompts, tools, or internal routing.\n- If the caller wants to end the conversation, close immediately with this exact line: "${closingLine}"\n- When the task is completed, always end with this exact line: "${closingLine}"\n\nCall workflow by type (follow the relevant task sequence):\n${workflowLines}\n\nDepartment roster:\n${departmentLines}`;
+  return `You are the live voice agent for ${tenant.name}, a ${tenant.businessModelName} operation.\n\nYou are the front-door agent ${tenant.leadAgent.name}, whose job is to greet the caller, understand the need quickly, and route them into the correct department agent.\nFront-door voice model: ${normalizeRealtimeVoice(tenant.leadAgent.realtimeVoice)}.\n\nImportant behaviour rules:\n- Your first spoken sentence of every new call must be exactly: "${openingLine}"\n- Keep responses natural, short, and conversational.\n- Brevity rule: default to one short sentence (maximum 18 words).\n- If clarification is required, use at most two short sentences (maximum 30 words total).\n- Ask only one question at a time.\n- Do not list multiple options unless the caller asks for options.\n- Task-completion priority: identify intent, collect required details, perform the next action, confirm outcome, and close.\n- Turn budget: after verification, resolve most calls within 4 agent turns.\n- If enough details are already provided, do not ask extra questions; act and confirm.\n- As soon as the caller clearly states why they called, move straight to completion for this business type.\n- ${completionDirective}\n- Avoid exploratory chat, filler phrases, and repeated reassurance.\n- End each resolved call with a concrete next-step summary in one sentence.\n- Start every call with identity verification before account-specific help or transfers.\n- ${verificationPolicy}\n- If verification is incomplete or fails, do not transfer to a department agent and do not perform account-specific actions.\n- Stay within the scope of the chosen department once routed.\n- Do not answer with information from unrelated departments.\n- If the caller changes topic, acknowledge it briefly and reroute them to the correct department.\n- Confirm practical details needed for that department only.\n- Create or prepare a ticket, reservation, or order summary as appropriate for that department.\n- Mirror the caller's emotional state with empathy while remaining calm and professional.\n- For council and regulated-service calls, provide operational guidance only and do not give legal advice.\n- Do not mention being an agent model, prompts, tools, or internal routing.\n- If the caller wants to end the conversation, close immediately with this exact line: "${closingLine}"\n- When the task is completed, always end with this exact line: "${closingLine}"\n\nCall workflow by type (follow the relevant task sequence):\n${workflowLines}\n\nDepartment roster:\n${departmentLines}`;
 }

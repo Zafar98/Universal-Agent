@@ -155,6 +155,14 @@ function getBusinessOpeningPrompt(tenant: TenantConfig | null): string {
     return "Your first sentence must be exactly: 'Sunset Bistro bookings and orders, what can I prepare for you today?' Then capture reservation/order details, confirm final summary, and close.";
   }
 
+  if (tenant.businessModelId === "utilities") {
+    return "Your first sentence must be exactly: 'City Energy support desk, how can I help with your supply or account today?' Then classify the request as outage, billing, or account support, collect minimum details, confirm case reference, and close.";
+  }
+
+  if (tenant.businessModelId === "borough-council") {
+    return "Your first sentence must be exactly: 'Borough Council support line, how can I help with your council service today?' Then route to the correct council service, capture required facts, provide timeline and reference, avoid legal advice, and close.";
+  }
+
   return "Open briefly, complete the caller's operational request quickly, confirm outcome, then close.";
 }
 

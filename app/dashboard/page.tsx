@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type BusinessModelCard = {
@@ -130,6 +130,15 @@ type HandoffQueueItem = {
   createdAt: string;
 };
 
+type LiveFeedConnection = "connecting" | "connected" | "fallback_polling";
+
+type CallLogStreamEvent = {
+  id: string;
+  type: "call_log_created" | "call_log_updated";
+  tenantId: string;
+  timestamp: string;
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [logs, setLogs] = useState<CallLog[]>([]);
@@ -147,6 +156,7 @@ export default function DashboardPage() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [operations, setOperations] = useState<BusinessOperation[]>([]);
   const [handoffs, setHandoffs] = useState<HandoffQueueItem[]>([]);
+  const [liveFeedConnection, setLiveFeedConnection] = useState<LiveFeedConnection>("connecting");
 
   const sampleLogs: CallLog[] = [
     {
@@ -434,57 +444,61 @@ export default function DashboardPage() {
     };
   }, []);
 
+  const loadDashboardData = useCallback(async () => {
+    const [sessionResponse, logResponse, modelResponse, operationsResponse] = await Promise.all([
+      fetch("/api/auth/session"),
+      fetch("/api/call-logs?syncTickets=1"),
+      fetch("/api/business-models"),
+      fetch("/api/operations"),
+    ]);
+
+    const sessionData = await sessionResponse.json().catch(() => ({}));
+    const data = await logResponse.json().catch(() => ({}));
+    const modelData = await modelResponse.json().catch(() => ({}));
+    const operationsData = await operationsResponse.json().catch(() => ({}));
+
+    const supportedSetupIds = new Set(["housing-association", "restaurant", "hotel", "utilities", "borough-council", "healthcare"]);
+    const currentBusiness = sessionData.business || null;
+    setBusiness(currentBusiness);
+
+    if (currentBusiness && !currentBusiness.isAdmin) {
+      if (!currentBusiness.selectedPlan || !currentBusiness.selectedIntegration) {
+        router.replace("/dashboard/started");
+        return;
+      }
+
+      if (currentBusiness.subscriptionStatus !== "trialing" && currentBusiness.subscriptionStatus !== "active") {
+        router.replace("/dashboard/setup");
+        return;
+      }
+    }
+
+    const fetchedLogs = Array.isArray(data.logs) ? (data.logs as CallLog[]) : [];
+    const defaultLogs = currentBusiness?.isAdmin ? sampleLogs : [];
+    setLogs(fetchedLogs.length > 0 ? fetchedLogs : defaultLogs);
+    setAnalytics(data.analytics || null);
+    setBusinessModels(
+      Array.isArray(modelData.businessModels)
+        ? (modelData.businessModels as BusinessModelApiItem[])
+            .filter((model) => supportedSetupIds.has(String(model.id || "")))
+            .map((model) => ({
+              id: String(model.id || ""),
+              name: String(model.name || "Business"),
+              businessModel: "Operations Blueprint",
+              focus: String(model.summary || model.overview || "Business workflow setup"),
+            }))
+        : []
+    );
+    setOperations(Array.isArray(operationsData.operations) ? operationsData.operations : []);
+    setHandoffs(Array.isArray(operationsData.handoffs) ? operationsData.handoffs : []);
+  }, [router]);
+
   useEffect(() => {
     let active = true;
 
-    const load = async () => {
+    const init = async () => {
       try {
-        const [sessionResponse, logResponse, modelResponse, operationsResponse] = await Promise.all([
-          fetch("/api/auth/session"),
-          fetch("/api/call-logs?syncTickets=1"),
-          fetch("/api/business-models"),
-          fetch("/api/operations"),
-        ]);
-        const sessionData = await sessionResponse.json().catch(() => ({}));
-        const data = await logResponse.json().catch(() => ({}));
-        const modelData = await modelResponse.json().catch(() => ({}));
-        const operationsData = await operationsResponse.json().catch(() => ({}));
-        if (active) {
-          const supportedSetupIds = new Set(["housing-association", "restaurant", "hotel"]);
-          const currentBusiness = sessionData.business || null;
-          setBusiness(currentBusiness);
-
-          if (currentBusiness && !currentBusiness.isAdmin) {
-            // First-time users: redirect to Get Started page if they haven't selected plan/integration yet
-            if (!currentBusiness.selectedPlan || !currentBusiness.selectedIntegration) {
-              router.replace("/dashboard/started");
-              return;
-            }
-            // Setup incomplete: redirect to Setup page if not activated yet
-            if (currentBusiness.subscriptionStatus !== "trialing" && currentBusiness.subscriptionStatus !== "active") {
-              router.replace("/dashboard/setup");
-              return;
-            }
-          }
-
-          const fetchedLogs = Array.isArray(data.logs) ? (data.logs as CallLog[]) : [];
-          setLogs(fetchedLogs.length > 0 ? fetchedLogs : sampleLogs);
-          setAnalytics(data.analytics || null);
-          setBusinessModels(
-            Array.isArray(modelData.businessModels)
-                ? (modelData.businessModels as BusinessModelApiItem[])
-                  .filter((model) => supportedSetupIds.has(String(model.id || "")))
-                  .map((model) => ({
-                  id: String(model.id || ""),
-                  name: String(model.name || "Business"),
-                  businessModel: "Operations Blueprint",
-                  focus: String(model.summary || model.overview || "Business workflow setup"),
-                }))
-              : []
-          );
-          setOperations(Array.isArray(operationsData.operations) ? operationsData.operations : []);
-          setHandoffs(Array.isArray(operationsData.handoffs) ? operationsData.handoffs : []);
-        }
+        await loadDashboardData();
       } catch (error) {
         console.error("Failed to load call logs:", error);
       } finally {
@@ -494,14 +508,74 @@ export default function DashboardPage() {
       }
     };
 
-    load();
-    const timer = setInterval(load, 5000);
+    void init();
 
     return () => {
       active = false;
-      clearInterval(timer);
     };
-  }, []);
+  }, [loadDashboardData]);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    let fallbackTimer: ReturnType<typeof setInterval> | null = null;
+    const stream = new EventSource("/api/call-logs/stream");
+
+    const startFallback = () => {
+      if (fallbackTimer) {
+        return;
+      }
+
+      setLiveFeedConnection("fallback_polling");
+      fallbackTimer = setInterval(() => {
+        void loadDashboardData().catch((error) => {
+          console.error("Fallback dashboard polling failed:", error);
+        });
+      }, 5000);
+    };
+
+    const stopFallback = () => {
+      if (!fallbackTimer) {
+        return;
+      }
+
+      clearInterval(fallbackTimer);
+      fallbackTimer = null;
+    };
+
+    stream.addEventListener("connected", () => {
+      setLiveFeedConnection("connected");
+      stopFallback();
+    });
+
+    stream.addEventListener("call_log", (event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent<string>).data || "{}") as CallLogStreamEvent;
+        if (!payload.id || !payload.type) {
+          return;
+        }
+      } catch {
+        // Ignore parse issues and still refresh state.
+      }
+
+      void loadDashboardData().catch((error) => {
+        console.error("Live call log refresh failed:", error);
+      });
+    });
+
+    stream.addEventListener("error", () => {
+      if (stream.readyState !== EventSource.OPEN) {
+        startFallback();
+      }
+    });
+
+    return () => {
+      stopFallback();
+      stream.close();
+    };
+  }, [loadDashboardData, loading]);
 
   const filteredLogs = useMemo(() => {
     const searchText = search.trim().toLowerCase();
@@ -640,6 +714,46 @@ export default function DashboardPage() {
         <p style={{ color: "#93c5fd", marginTop: "10px", fontSize: "15px", lineHeight: 1.7, maxWidth: "840px" }}>
           This is the main workspace your customers log into after signup. It gives them one place to monitor call traffic, inspect transcripts, confirm setup status, and manage the business actions created by the agent.
         </p>
+
+        <div
+          style={{
+            marginTop: "10px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            borderRadius: "999px",
+            border:
+              liveFeedConnection === "connected"
+                ? "1px solid rgba(45,212,191,0.35)"
+                : "1px solid rgba(148,163,184,0.35)",
+            background:
+              liveFeedConnection === "connected"
+                ? "rgba(15,118,110,0.14)"
+                : "rgba(51,65,85,0.25)",
+            padding: "7px 12px",
+          }}
+        >
+          <span
+            style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "999px",
+              background:
+                liveFeedConnection === "connected"
+                  ? "#14b8a6"
+                  : liveFeedConnection === "fallback_polling"
+                    ? "#f59e0b"
+                    : "#94a3b8",
+            }}
+          />
+          <span style={{ color: "#cbd5e1", fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            {liveFeedConnection === "connected"
+              ? "Live feed connected"
+              : liveFeedConnection === "fallback_polling"
+                ? "Live stream unavailable - fallback polling"
+                : "Connecting live feed"}
+          </span>
+        </div>
 
         <div
           style={{
@@ -1173,6 +1287,7 @@ export default function DashboardPage() {
           ) : null}
         </div>
 
+        {business?.isAdmin ? (
         <div
           style={{
             marginTop: "18px",
@@ -1233,6 +1348,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+        ) : null}
 
         <div
           style={{

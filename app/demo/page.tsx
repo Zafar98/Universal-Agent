@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useVoiceCall } from "@/lib/useVoiceCall";
 
-const TRIAL_SECONDS = 60;
+const TRIAL_SECONDS = 120;
 
 /** Derive a lightweight browser fingerprint without any third-party library. */
 function computeFingerprint(): string {
@@ -562,7 +562,7 @@ export default function DemoPage() {
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleStartCall = async () => {
-    if (!isSubscribed && deviceBlocked) {
+    if (!isSubscribed) {
       setCallPhase("ended");
       return;
     }
@@ -673,79 +673,7 @@ export default function DemoPage() {
           </p>
         </div>
 
-        {authState.kind === "authenticated" && !isSubscribed && !trialExhausted && (
-          <div
-            style={{
-              width: "100%",
-              maxWidth: 520,
-              background: urgentTimer ? "rgba(239,68,68,0.1)" : "rgba(251,191,36,0.1)",
-              border: urgentTimer
-                ? "1px solid rgba(248,113,113,0.45)"
-                : "1px solid rgba(251,191,36,0.3)",
-              borderRadius: 18,
-              padding: "16px 18px",
-              marginBottom: 22,
-              boxShadow: urgentTimer
-                ? "0 10px 40px rgba(239,68,68,0.12)"
-                : "0 10px 40px rgba(251,191,36,0.08)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 16,
-                marginBottom: 10,
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <div style={{ color: "white", fontSize: 14, fontWeight: 800, letterSpacing: "0.02em" }}>
-                  SHARED DEMO TIMER
-                </div>
-                <div style={{ color: "rgba(255,255,255,0.68)", fontSize: 13, marginTop: 4 }}>
-                  Switch businesses if you want. The minute does not reset.
-                </div>
-              </div>
-              <div
-                style={{
-                  color: urgentTimer ? "#fca5a5" : "#fde68a",
-                  fontSize: 30,
-                  fontWeight: 900,
-                  letterSpacing: "-0.06em",
-                  fontFamily: "monospace",
-                  minWidth: 88,
-                  textAlign: "right",
-                }}
-              >
-                {formatTime(trialSecondsLeft)}
-              </div>
-            </div>
 
-            <div
-              style={{
-                width: "100%",
-                height: 10,
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.1)",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  width: `${trialProgressPercent}%`,
-                  height: "100%",
-                  borderRadius: 999,
-                  background: urgentTimer
-                    ? "linear-gradient(90deg, #ef4444 0%, #f97316 100%)"
-                    : "linear-gradient(90deg, #f59e0b 0%, #facc15 100%)",
-                  transition: "width 0.5s ease",
-                }}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Loading */}
         {authState.kind === "loading" && <Spinner />}
@@ -841,26 +769,7 @@ export default function DemoPage() {
               </div>
             </div>
 
-            {!isSubscribed && (
-              <div
-                style={{
-                  background: "rgba(251,191,36,0.08)",
-                  border: "1px solid rgba(251,191,36,0.22)",
-                  borderRadius: 10,
-                  padding: "10px 14px",
-                  color: "#fde68a",
-                  fontSize: 13,
-                  marginBottom: 20,
-                }}
-              >
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>
-                  Shared demo window: {formatTime(trialSecondsLeft)} remaining
-                </div>
-                <div>
-                  Try different businesses within the same minute. The timer keeps running between calls and ends automatically at zero.
-                </div>
-              </div>
-            )}
+
 
             {!isSubscribed && (
               <div
@@ -1023,33 +932,7 @@ export default function DemoPage() {
               {selectedBusiness?.name} AI Agent
             </div>
 
-            {/* Countdown */}
-            {!isSubscribed && (
-              <div
-                style={{
-                  fontSize: 48,
-                  fontWeight: 900,
-                  color: urgentTimer ? "#f87171" : "#a5b4fc",
-                  letterSpacing: "-2px",
-                  marginBottom: 6,
-                  animation: urgentTimer ? "timerPulse 0.7s ease-in-out infinite" : "none",
-                  fontFamily: "monospace",
-                }}
-              >
-                {formatTime(trialSecondsLeft)}
-              </div>
-            )}
-            {!isSubscribed && (
-              <div
-                style={{
-                  color: urgentTimer ? "#fca5a5" : "rgba(255,255,255,0.4)",
-                  fontSize: 13,
-                  marginBottom: 28,
-                }}
-              >
-                {urgentTimer ? "⚠️ Shared demo window ending soon" : "Shared demo time remaining across all businesses"}
-              </div>
-            )}
+
 
             {isSubscribed && (
               <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 28 }}>

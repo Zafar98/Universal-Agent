@@ -14,6 +14,7 @@ import { getBusinessAccountByTenantId } from "@/lib/businessAuthStore";
 import { runPostCallActions } from "@/lib/postCallActions";
 import { getEffectiveBusinessWorkspace } from "@/lib/businessWorkspaceStore";
 import { runAutonomousExecution } from "@/lib/autonomyEngine";
+import { publishCallLogEvent } from "@/lib/callLogEvents";
 
 type RawTranscriptItem = {
   id?: string;
@@ -203,6 +204,13 @@ export async function POST(request: NextRequest) {
       console.error("Call log POST database write failed, using memory fallback:", dbError);
     }
 
+    publishCallLogEvent({
+      id: log.id,
+      type: "call_log_created",
+      tenantId: log.tenantId,
+      timestamp: new Date().toISOString(),
+    });
+
     // ─── Post-call actions (fire & forget, non-blocking) ───────────────────
     const businessAccount = await getBusinessAccountByTenantId(log.tenantId).catch(() => null);
     void runPostCallActions({
@@ -279,6 +287,13 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: "Call log not found" }, { status: 404 });
       }
 
+      publishCallLogEvent({
+        id: updated.id,
+        type: "call_log_updated",
+        tenantId: updated.tenantId,
+        timestamp: new Date().toISOString(),
+      });
+
       return NextResponse.json({ log: updated });
     }
 
@@ -302,6 +317,15 @@ export async function PATCH(request: NextRequest) {
       contractorEta: contractorEta !== undefined ? String(contractorEta) : undefined,
       status: status || undefined,
     });
+
+    if (updated) {
+      publishCallLogEvent({
+        id: updated.id,
+        type: "call_log_updated",
+        tenantId: updated.tenantId,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     return NextResponse.json({ log: updated });
   } catch (error) {
