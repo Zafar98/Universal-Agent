@@ -589,17 +589,18 @@ export default function DashboardPage() {
       style={{
         minHeight: "100vh",
         padding: "24px",
-        background: "linear-gradient(180deg, #eef4ff 0%, #edf3ff 45%, #f8fbff 100%)",
+        background:
+          "radial-gradient(900px 420px at 12% 0%, rgba(34,211,238,0.18), transparent 65%), radial-gradient(880px 460px at 88% 18%, rgba(52,211,153,0.14), transparent 68%), linear-gradient(145deg, #030712 0%, #0b1220 54%, #020617 100%)",
         fontFamily: "var(--font-geist-sans), 'Segoe UI', sans-serif",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <div>
-            <div style={{ color: "#5f76a6", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "6px" }}>
+            <div style={{ color: "#67e8f9", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "6px" }}>
               Customer Dashboard
             </div>
-            <h1 style={{ margin: 0, color: "#0b1a3a", fontSize: "34px", letterSpacing: "-0.03em" }}>
+            <h1 style={{ margin: 0, color: "#e2e8f0", fontSize: "34px", letterSpacing: "-0.03em" }}>
               {business?.isAdmin ? "Platform Operations" : "AI Call Dashboard"}
             </h1>
           </div>
@@ -609,10 +610,10 @@ export default function DashboardPage() {
                 href="/admin"
                 style={{
                   textDecoration: "none",
-                  border: "1px solid #bfd1f5",
+                  border: "1px solid rgba(45,212,191,0.32)",
                   borderRadius: "999px",
-                  background: "white",
-                  color: "#21447f",
+                  background: "rgba(15,23,42,0.92)",
+                  color: "#ccfbf1",
                   padding: "8px 12px",
                   fontWeight: 600,
                 }}
@@ -623,10 +624,10 @@ export default function DashboardPage() {
             <button
               onClick={handleLogout}
               style={{
-                border: "1px solid #bfd1f5",
+                border: "1px solid rgba(45,212,191,0.32)",
                 borderRadius: "999px",
-                background: "white",
-                color: "#21447f",
+                background: "rgba(15,23,42,0.92)",
+                color: "#ccfbf1",
                 cursor: "pointer",
                 padding: "8px 12px",
                 fontWeight: 600,
@@ -636,7 +637,7 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-        <p style={{ color: "#516b99", marginTop: "10px", fontSize: "15px", lineHeight: 1.7, maxWidth: "840px" }}>
+        <p style={{ color: "#93c5fd", marginTop: "10px", fontSize: "15px", lineHeight: 1.7, maxWidth: "840px" }}>
           This is the main workspace your customers log into after signup. It gives them one place to monitor call traffic, inspect transcripts, confirm setup status, and manage the business actions created by the agent.
         </p>
 
@@ -695,20 +696,20 @@ export default function DashboardPage() {
           <div
             style={{
               marginTop: "18px",
-              background: "white",
+              background: "rgba(8,15,32,0.92)",
               borderRadius: "18px",
-              border: "1px solid #dbe7ff",
-              boxShadow: "0 8px 22px rgba(16,24,40,0.06)",
+              border: "1px solid rgba(45,212,191,0.22)",
+              boxShadow: "0 14px 28px rgba(2,6,23,0.45)",
               padding: "18px",
             }}
           >
-            <div style={{ color: "#5571a7", fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>
+            <div style={{ color: "#67e8f9", fontSize: "12px", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>
               {business.isAdmin ? "Platform Admin Workspace" : "Workspace Status"}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap", marginTop: "8px" }}>
               <div>
-                <div style={{ color: "#102349", fontSize: "28px", fontWeight: 800 }}>{business.businessName}</div>
-                <div style={{ color: "#4f6895", marginTop: "6px" }}>
+                <div style={{ color: "#e2e8f0", fontSize: "28px", fontWeight: 800 }}>{business.businessName}</div>
+                <div style={{ color: "#94a3b8", marginTop: "6px" }}>
                   {business.isAdmin
                     ? "Viewing all tenants, all calls, and all contractor workflows"
                     : `Tenant ID: ${business.tenantId} · Agents requested: ${business.agentCount} · Verification: ${business.verificationMethod}`}

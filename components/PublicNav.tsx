@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { BrandMark } from "@/components/BrandMark";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -50,39 +51,10 @@ export function PublicNav() {
             textDecoration: "none",
             display: "flex",
             alignItems: "center",
-            gap: "10px",
             flexShrink: 0,
           }}
         >
-          <div
-            style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "9px",
-              background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "13px",
-              fontWeight: 900,
-              color: "white",
-              letterSpacing: "-0.02em",
-              flexShrink: 0,
-            }}
-          >
-            UA
-          </div>
-          <span
-            style={{
-              color: "#e0f2fe",
-              fontWeight: 800,
-              fontSize: "16px",
-              letterSpacing: "-0.01em",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Universal Agent
-          </span>
+          <BrandMark size={34} showWordmark />
         </Link>
 
         {/* Desktop nav links */}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { BrandMark } from "@/components/BrandMark";
 
 type SessionBusiness = {
   isAdmin?: boolean;
@@ -62,8 +63,8 @@ export function AppWorkspaceHeader() {
         top: 0,
         zIndex: 30,
         backdropFilter: "blur(10px)",
-        background: "rgba(255,255,255,0.92)",
-        borderBottom: "1px solid var(--border)",
+        background: "rgba(2,8,23,0.9)",
+        borderBottom: "1px solid rgba(45,212,191,0.22)",
       }}
     >
       <div
@@ -79,31 +80,31 @@ export function AppWorkspaceHeader() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-          <Link href="/" style={{ textDecoration: "none", color: "var(--primary-strong)", fontWeight: 800 }}>
-            Universal Agent
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <BrandMark size={28} showWordmark />
           </Link>
           <nav style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            <Link href="/dashboard" style={{ textDecoration: "none", color: "#1f3a75", fontWeight: 600, fontSize: "14px" }}>
+            <Link href="/dashboard" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
               Dashboard
             </Link>
-            <Link href="/admin" style={{ textDecoration: "none", color: "#1f3a75", fontWeight: 600, fontSize: "14px" }}>
+            <Link href="/admin" style={{ textDecoration: "none", color: "#67e8f9", fontWeight: 600, fontSize: "14px" }}>
               Admin
             </Link>
           </nav>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          <div style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+          <div style={{ color: "#94a3b8", fontSize: "13px" }}>
             {business?.businessName || "Workspace"}
           </div>
           <button
             onClick={logout}
             style={{
-              border: "1px solid var(--border)",
-              background: "var(--surface)",
+              border: "1px solid rgba(45,212,191,0.28)",
+              background: "rgba(15,23,42,0.92)",
               borderRadius: "999px",
               padding: "7px 12px",
-              color: "#21447f",
+              color: "#ccfbf1",
               cursor: "pointer",
               fontWeight: 700,
             }}

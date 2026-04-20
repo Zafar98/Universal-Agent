@@ -368,7 +368,7 @@ export function HomepageTrialExperience() {
               </div>
             ) : null}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+            <div style={{ marginBottom: 14 }}>
               <button
                 type="button"
                 onClick={callPhase === "active" ? handleEndCall : handleStartCall}
@@ -383,6 +383,7 @@ export function HomepageTrialExperience() {
                   padding: "16px 24px",
                   fontSize: 16,
                   fontWeight: 900,
+                  width: "100%",
                   cursor: isRefreshingTrial || (!callState.isActive && !canCall) || callState.connectionStatus === "connecting" ? "not-allowed" : "pointer",
                   opacity: isRefreshingTrial || (!callState.isActive && !canCall) || callState.connectionStatus === "connecting" ? 0.6 : 1,
                 }}
@@ -392,29 +393,9 @@ export function HomepageTrialExperience() {
                   : callPhase === "active"
                   ? "End Trial Call"
                   : trialHasStarted
-                  ? `Try ${selectedBusiness?.name || "Another Business"}`
-                  : "Start 60-Second Trial"}
+                  ? `Start Call (${formatTime(trialSecondsLeft)} left)`
+                  : "Start Call (1-Minute Trial)"}
               </button>
-
-              <Link
-                href="/signup"
-                style={{
-                  borderRadius: 16,
-                  padding: "16px 22px",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "white",
-                  border: "none",
-                  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                Skip Trial → Sign Up
-              </Link>
             </div>
 
             <Link

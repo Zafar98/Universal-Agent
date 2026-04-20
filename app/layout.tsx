@@ -5,6 +5,7 @@ import { AppWorkspaceHeader } from "@/components/AppWorkspaceHeader";
 import { PublicNav } from "@/components/PublicNav";
 import { GlobalCursorFx } from "@/components/GlobalCursorFx";
 import Link from "next/link";
+import { BrandMark } from "@/components/BrandMark";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,11 +18,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Universal Agent – Autonomous Voice Platform",
+  title: "Asistoria - Autonomous Voice Platform",
   description:
-    "Universal Agent powers real-time voice agents for housing associations, hotels, restaurants, and concierge teams. One platform, every business line.",
+    "Asistoria powers real-time voice agents for housing associations, hotels, restaurants, and concierge teams. One platform, every business line.",
   openGraph: {
-    title: "Universal Agent – Autonomous Voice Platform",
+    title: "Asistoria - Autonomous Voice Platform",
     description:
       "Real-time voice agents for housing, hotels, restaurants, and concierge. Handle calls end-to-end in one intelligent voice.",
     type: "website",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Universal Agent – Autonomous Voice Platform",
+    title: "Asistoria - Autonomous Voice Platform",
     description: "Real-time voice agents for every business line.",
   },
 };
@@ -69,24 +70,8 @@ export default function RootLayout({
           >
             {/* Brand column */}
             <div style={{ gridColumn: "span 1" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "12px" }}>
-                <div
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "8px",
-                    background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                    fontWeight: 900,
-                    color: "white",
-                  }}
-                >
-                  UA
-                </div>
-                <span style={{ color: "#e0f2fe", fontWeight: 800, fontSize: "15px" }}>Universal Agent</span>
+              <div style={{ marginBottom: "12px" }}>
+                <BrandMark size={30} showWordmark />
               </div>
               <p style={{ color: "#64748b", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>
                 Autonomous voice agents for housing, hotels, restaurants, and concierge teams.
@@ -148,7 +133,7 @@ export default function RootLayout({
                     {link.label}
                   </Link>
                 ))}
-                <span style={{ color: "#94a3b8", fontSize: "13px" }}>legal@universalagent.local</span>
+                <span style={{ color: "#94a3b8", fontSize: "13px" }}>legal@asistoria.local</span>
               </div>
             </div>
           </div>
@@ -167,7 +152,7 @@ export default function RootLayout({
             }}
           >
             <span style={{ color: "#475569", fontSize: "12px" }}>
-              © {new Date().getFullYear()} Universal Agent. All rights reserved.
+              © {new Date().getFullYear()} Asistoria. All rights reserved.
             </span>
             <span style={{ color: "#334155", fontSize: "12px" }}>
               Built for housing · hospitality · food service

@@ -61,18 +61,23 @@ export default function SignupPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [requiresChallenge, setRequiresChallenge] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     surname: "",
     email: "",
     password: "",
     website: "",
+    challengeToken: "",
     formStartedAt: Date.now(),
     termsAccepted: false,
     privacyAccepted: false,
+    dpaAccepted: false,
+    subprocessorAccepted: false,
+    aiDisclosureAccepted: false,
   });
 
-  const chosenPlan = searchParams.get("plan") || "starter";
+  const chosenPlan = searchParams.get("plan") || "monthly_1999";
   const chosenIntegration = searchParams.get("integration") || "website-widget";
   const verificationState = searchParams.get("verification") || "";
 
@@ -115,8 +120,8 @@ export default function SignupPage() {
 
   const submitSignup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.termsAccepted || !form.privacyAccepted) {
-      setError("You must accept the Terms and Privacy Policy to continue.");
+    if (!form.termsAccepted || !form.privacyAccepted || !form.dpaAccepted || !form.subprocessorAccepted || !form.aiDisclosureAccepted) {
+      setError("You must accept all legal terms to continue.");
       return;
     }
 
@@ -135,14 +140,23 @@ export default function SignupPage() {
           selectedPlan: chosenPlan,
           selectedIntegration: chosenIntegration,
           website: form.website,
+          challengeToken: form.challengeToken,
           formStartedAt: form.formStartedAt,
           termsAccepted: form.termsAccepted,
           privacyAccepted: form.privacyAccepted,
+          dpaAccepted: form.dpaAccepted,
+          subprocessorAccepted: form.subprocessorAccepted,
+          aiDisclosureAccepted: form.aiDisclosureAccepted,
         }),
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
+        if (response.status === 403 && data.requiresChallenge) {
+          setRequiresChallenge(true);
+          setError("Additional human verification is required. Complete the challenge token and retry.");
+          return;
+        }
         setError(data.error || "Unable to create account right now.");
         return;
       }
@@ -152,6 +166,7 @@ export default function SignupPage() {
       setDevLink(String(data.verificationUrl || ""));
       setDevCode(String(data.verificationPreviewCode || ""));
       setVerificationCode(String(data.verificationPreviewCode || ""));
+      setRequiresChallenge(false);
       setStage("verify");
     } catch {
       setError("Unable to create account right now. Please try again.");
@@ -284,11 +299,35 @@ export default function SignupPage() {
                   <input type="checkbox" checked={form.termsAccepted} onChange={(event) => setForm((prev) => ({ ...prev, termsAccepted: event.target.checked }))} style={{ marginTop: "2px", accentColor: "#0ea5e9" }} />
                   <span>I agree to the <Link href="/terms" style={{ color: "#38bdf8", fontWeight: 700, textDecoration: "none" }}>Terms and Conditions</Link>.</span>
                 </label>
-                <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#94a3b8", fontSize: "13px" }}>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#94a3b8", fontSize: "13px", marginBottom: "10px" }}>
                   <input type="checkbox" checked={form.privacyAccepted} onChange={(event) => setForm((prev) => ({ ...prev, privacyAccepted: event.target.checked }))} style={{ marginTop: "2px", accentColor: "#0ea5e9" }} />
                   <span>I agree to the <Link href="/privacy" style={{ color: "#38bdf8", fontWeight: 700, textDecoration: "none" }}>Privacy Policy</Link>.</span>
                 </label>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#94a3b8", fontSize: "13px", marginBottom: "10px" }}>
+                  <input type="checkbox" checked={form.dpaAccepted} onChange={(event) => setForm((prev) => ({ ...prev, dpaAccepted: event.target.checked }))} style={{ marginTop: "2px", accentColor: "#0ea5e9" }} />
+                  <span>I acknowledge the Data Processing Agreement (DPA).</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#94a3b8", fontSize: "13px", marginBottom: "10px" }}>
+                  <input type="checkbox" checked={form.subprocessorAccepted} onChange={(event) => setForm((prev) => ({ ...prev, subprocessorAccepted: event.target.checked }))} style={{ marginTop: "2px", accentColor: "#0ea5e9" }} />
+                  <span>I acknowledge approved sub-processors may process data on our behalf.</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#94a3b8", fontSize: "13px" }}>
+                  <input type="checkbox" checked={form.aiDisclosureAccepted} onChange={(event) => setForm((prev) => ({ ...prev, aiDisclosureAccepted: event.target.checked }))} style={{ marginTop: "2px", accentColor: "#0ea5e9" }} />
+                  <span>I accept AI call handling and recording disclosure obligations for inbound callers.</span>
+                </label>
               </div>
+
+              {requiresChallenge ? (
+                <div style={{ marginTop: "12px", borderRadius: "12px", border: "1px solid rgba(234,179,8,0.45)", background: "rgba(113,63,18,0.32)", padding: "12px" }}>
+                  <label style={labelStyle}>Challenge token</label>
+                  <input
+                    value={form.challengeToken}
+                    onChange={(event) => setForm((prev) => ({ ...prev, challengeToken: event.target.value }))}
+                    placeholder="Paste Turnstile challenge token"
+                    style={{ ...inputStyle, marginBottom: 0 }}
+                  />
+                </div>
+              ) : null}
 
               <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={form.website} onChange={(event) => setForm((prev) => ({ ...prev, website: event.target.value }))} style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }} />
 

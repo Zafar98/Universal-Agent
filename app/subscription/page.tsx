@@ -24,7 +24,7 @@ const INTEGRATIONS = [
     title: "Phone Number",
     subtitle: "Dedicated UK number routed to your agent",
     description:
-      "We provision a dedicated UK phone number for your business. Anyone who dials it is connected straight to your Universal Agent — no app, no website change needed.",
+      "We provision a dedicated UK phone number for your business. Anyone who dials it is connected straight to your Asistoria agent - no app, no website change needed.",
     details: [
       "UK geographic or 0800 number",
       "Instant call routing to your agent",
@@ -50,55 +50,24 @@ const INTEGRATIONS = [
 
 const PLANS = [
   {
-    name: "Starter",
-    price: "£49/mo",
-    subtitle: "Best for single-site teams starting out",
-    tone: "#0369a1",
-    features: [
-      "1 business line",
-      "Up to 300 call minutes/month",
-      "Basic workflow routing",
-      "Dashboard with core logs",
-      "Email support (48h SLA)",
-      "Out-of-hours SMS bundle: 100 messages",
-    ],
-    limits: ["No custom voice profile", "No API export", "No advanced analytics"],
-    popular: false,
-  },
-  {
-    name: "Growth",
-    price: "£149/mo",
-    subtitle: "Best for growing operations with multiple departments",
-    tone: "#1d4ed8",
-    features: [
-      "Up to 5 business lines",
-      "Up to 2,500 call minutes/month",
-      "Department-specific workflow playbooks",
-      "Priority dashboard analytics",
-      "Ticket workflow updates in-app",
-      "Out-of-hours SMS bundle: 1,000 messages",
-      "Priority support (8h SLA)",
-    ],
-    limits: ["No white-label domain", "Limited custom integrations"],
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "£499/mo",
-    subtitle: "Best for high-volume, multi-tenant business operations",
-    tone: "#7e22ce",
+    name: "monthly_1999",
+    label: "Asistoria Full Access",
+    price: "£1,999/month",
+    subtitle: "One all-inclusive subscription for full deployment",
+    tone: "#06b6d4",
     features: [
       "Unlimited business lines",
-      "Unlimited call minutes (fair use)",
-      "Advanced workflow orchestration",
-      "Live operational analytics + exports",
-      "Custom integrations + webhooks",
-      "Dedicated onboarding and success manager",
-      "Out-of-hours SMS bundle: 10,000 messages",
-      "24/7 premium support (1h SLA)",
+      "Unlimited call minutes",
+      "Agent build and onboarding implementation",
+      "Workflow automation and ticketing",
+      "Live call logs and transcripts dashboard",
+      "Maintenance layer: uptime, bug fixes, response optimisation",
+      "Up to 2 small updates per month",
+      "Admin-managed agent changes with request flow",
+      "Priority support",
     ],
     limits: [],
-    popular: false,
+    popular: true,
   },
 ];
 
@@ -127,7 +96,7 @@ export default function SubscriptionPage() {
         minHeight: "100vh",
         padding: "30px 16px 60px",
         background:
-          "radial-gradient(920px 420px at 16% 0%, rgba(56,189,248,0.2), transparent 64%), radial-gradient(900px 460px at 88% 18%, rgba(59,130,246,0.2), transparent 68%), linear-gradient(145deg, #0b1020 0%, #111827 50%, #172554 100%)",
+          "radial-gradient(920px 420px at 16% 0%, rgba(34,211,238,0.2), transparent 64%), radial-gradient(900px 460px at 88% 18%, rgba(52,211,153,0.17), transparent 68%), linear-gradient(145deg, #020617 0%, #030712 52%, #0b1220 100%)",
         color: "#e2e8f0",
         fontFamily: "var(--font-geist-sans), 'Segoe UI', sans-serif",
       }}
@@ -137,13 +106,13 @@ export default function SubscriptionPage() {
         {/* Page header */}
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <div style={{ color: "#67e8f9", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: "10px" }}>
-            Subscription Packages
+            Single Subscription
           </div>
           <h1 style={{ margin: "0 0 12px", fontSize: "42px", color: "#e0f2fe", fontWeight: 900, letterSpacing: "-0.02em" }}>
-            Choose your Universal Agent package
+            One plan. Full Asistoria deployment.
           </h1>
           <p style={{ color: "#cbd5e1", maxWidth: "700px", margin: "0 auto", lineHeight: 1.55 }}>
-            Complete two steps: pick how your customers will reach your agent, then choose the plan that fits your call volume.
+            Complete two steps: pick how customers reach your agent, then activate the single £1,999/month plan.
           </p>
         </div>
 
@@ -294,7 +263,7 @@ export default function SubscriptionPage() {
             </div>
             <div>
               <div style={{ color: selectedIntegration ? "#e0f2fe" : "#64748b", fontWeight: 800, fontSize: "18px" }}>
-                Pick the plan that matches your call volume
+                Activate your monthly subscription
               </div>
               {selectedIntegrationData ? (
                 <div style={{ color: "#22d3ee", fontSize: "13px" }}>
@@ -343,9 +312,7 @@ export default function SubscriptionPage() {
                   </div>
                 ) : null}
 
-                <h2 style={{ marginTop: 0, marginBottom: "6px", color: "#e2e8f0", fontSize: "26px" }}>
-                  {plan.name}
-                </h2>
+                <h2 style={{ marginTop: 0, marginBottom: "6px", color: "#e2e8f0", fontSize: "26px" }}>{plan.label}</h2>
                 <div style={{ color: "#67e8f9", fontSize: "30px", fontWeight: 800, marginBottom: "8px" }}>
                   {plan.price}
                 </div>
@@ -414,7 +381,7 @@ export default function SubscriptionPage() {
                   }}
                 >
                   {selectedIntegration
-                    ? `Choose ${plan.name} →`
+                    ? "Continue to signup ->"
                     : "Select integration method first"}
                 </button>
 
@@ -440,8 +407,7 @@ export default function SubscriptionPage() {
         >
           <div style={{ color: "#93c5fd", fontWeight: 700, marginBottom: "4px" }}>SMS pricing note</div>
           <div style={{ color: "#cbd5e1", fontSize: "13px", lineHeight: 1.5 }}>
-            If your monthly SMS bundle is exceeded, overage is billed at £0.06 per outbound SMS. API & Webhooks
-            integrations include webhook delivery retries for up to 24 hours at no extra cost.
+            Included monthly updates cover opening hours, menu/FAQ adjustments, and minor logic tweaks. Larger changes are handled as billable upgrades.
           </div>
         </div>
       </div>

@@ -416,7 +416,7 @@ export function CallInterface({ initialTenantId }: { initialTenantId?: string })
           </div>
 
           <h1 style={{ fontSize: "40px", fontWeight: 900, color: "#e0f2fe", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-            Universal Agent
+            Asistoria
           </h1>
           <p style={{ color: "#bae6fd", marginBottom: "26px", fontSize: "16px" }}>
             Futuristic real-time business voice operations in one intelligent control line
@@ -526,7 +526,7 @@ export function CallInterface({ initialTenantId }: { initialTenantId?: string })
           </div>
 
           <h2 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, color: "#f8fafc" }}>
-            {callState.tenantName || "Universal Agent"}
+            {callState.tenantName || "Asistoria"}
           </h2>
 
           <p style={{ margin: "0 0 14px", color: "#93c5fd", fontSize: "14px" }}>
@@ -757,7 +757,7 @@ export function CallInterface({ initialTenantId }: { initialTenantId?: string })
         </div>
 
         <h2 style={{ color: "#e0f2fe", fontSize: "26px", margin: "0 0 12px", fontWeight: 800 }}>
-          {callState.tenantName || "Universal Agent"}
+          {callState.tenantName || "Asistoria"}
         </h2>
 
         <div style={{ color: "#bae6fd", fontSize: "20px", fontWeight: 700, marginBottom: "12px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>

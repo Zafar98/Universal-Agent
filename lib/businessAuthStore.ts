@@ -3,7 +3,7 @@ import { getPool, hasDatabaseConfig } from "@/lib/postgres";
 import { BusinessModelId } from "@/lib/businessModels";
 
 export type VerificationMethod = "email" | "phone";
-export type PlanTier = "starter" | "growth" | "enterprise";
+export type PlanTier = "starter" | "growth" | "enterprise" | "monthly_1999";
 export type IntegrationMethod = "website-widget" | "phone-number" | "api-webhooks";
 export type SubscriptionStatus = "pending_payment" | "trialing" | "active" | "past_due" | "canceled";
 
@@ -107,10 +107,16 @@ function normalizePhone(value?: string): string | null {
 
 function normalizePlanTier(value?: string): PlanTier {
   const normalized = String(value || "").toLowerCase();
-  if (normalized === "starter" || normalized === "growth" || normalized === "enterprise") {
-    return normalized;
+  if (
+    normalized === "starter" ||
+    normalized === "growth" ||
+    normalized === "enterprise" ||
+    normalized === "monthly_1999" ||
+    normalized === "monthly"
+  ) {
+    return normalized === "monthly" ? "monthly_1999" : normalized;
   }
-  return "starter";
+  return "monthly_1999";
 }
 
 function normalizeIntegrationMethod(value?: string): IntegrationMethod {

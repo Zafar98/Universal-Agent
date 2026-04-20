@@ -326,8 +326,9 @@ export default function AdminDashboardPage() {
       style={{
         minHeight: "100vh",
         padding: "22px",
-        background: "linear-gradient(135deg, #f0f4ff 0%, #e5efff 100%)",
-        color: "#132145",
+        background:
+          "radial-gradient(900px 420px at 10% 0%, rgba(34,211,238,0.16), transparent 66%), linear-gradient(145deg, #030712 0%, #0b1220 58%, #020617 100%)",
+        color: "#e2e8f0",
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
@@ -337,16 +338,16 @@ export default function AdminDashboardPage() {
             <div style={{ color: "#4f6895", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Admin Developer Console
             </div>
-            <h1 style={{ margin: "6px 0 0", fontSize: "30px" }}>Universal Agent - Platform Admin</h1>
-            <p style={{ marginTop: "6px", color: "#4f6895" }}>
+            <h1 style={{ margin: "6px 0 0", fontSize: "30px", color: "#e2e8f0" }}>Asistoria - Platform Admin</h1>
+            <p style={{ marginTop: "6px", color: "#93c5fd" }}>
               Business analytics, tenant management, call logs, and operational metrics.
             </p>
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <a href="/dashboard" style={{ color: "#1d4ed8", textDecoration: "none", border: "1px solid #bfd1f5", padding: "8px 12px", borderRadius: "10px" }}>
+            <a href="/dashboard" style={{ color: "#ccfbf1", textDecoration: "none", border: "1px solid rgba(45,212,191,0.32)", padding: "8px 12px", borderRadius: "10px", background: "rgba(15,23,42,0.9)" }}>
               Business Dashboard
             </a>
-            <button onClick={logout} style={{ color: "#132145", background: "#dbe7ff", border: "1px solid #bfd1f5", padding: "8px 12px", borderRadius: "10px", cursor: "pointer" }}>
+            <button onClick={logout} style={{ color: "#ccfbf1", background: "rgba(15,23,42,0.9)", border: "1px solid rgba(45,212,191,0.32)", padding: "8px 12px", borderRadius: "10px", cursor: "pointer" }}>
               Logout
             </button>
           </div>

@@ -161,7 +161,7 @@ export default function DashboardSetupPage() {
             Go Live Setup
           </div>
           <h1 style={{ margin: "10px 0 8px", fontSize: "36px", color: "#e0f2fe", letterSpacing: "-0.02em" }}>
-            Activate your Universal Agent
+            Activate your Asistoria agent
           </h1>
           <p style={{ margin: 0, color: "#94a3b8", lineHeight: 1.6 }}>
             {business?.businessName || "Your workspace"} needs billing activation and integration setup before live call routing is enabled.
@@ -323,7 +323,7 @@ export default function DashboardSetupPage() {
               <input
                 value={webhookUrl}
                 onChange={(event) => setWebhookUrl(event.target.value)}
-                placeholder="https://yourapp.com/webhooks/universal-agent"
+                placeholder="https://yourapp.com/webhooks/asistoria"
                 style={{
                   width: "100%",
                   padding: "10px 12px",

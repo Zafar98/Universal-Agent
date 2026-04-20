@@ -49,7 +49,7 @@ export default function NotFound() {
           boxShadow: "0 8px 20px rgba(6,182,212,0.25)",
         }}
       >
-        Back to Universal Agent
+        Back to Asistoria
       </Link>
     </div>
   );

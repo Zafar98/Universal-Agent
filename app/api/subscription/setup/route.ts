@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
   };
 
   if (selectedIntegration === "website-widget") {
-    integrationConfig.widgetEmbedCode = `<script src=\"https://universalagent.ai/embed.js\" data-tenant=\"${account.tenantId}\" data-theme=\"dark\"></script>`;
+    integrationConfig.widgetEmbedCode = `<script src=\"https://asistoria.ai/embed.js\" data-tenant=\"${account.tenantId}\" data-theme=\"dark\"></script>`;
     integrationConfig.configuredAt = new Date().toISOString();
   }
 

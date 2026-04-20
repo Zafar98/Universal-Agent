@@ -7,7 +7,7 @@ const SECTIONS = [
   { title: "4. Data Retention", body: "Data is retained only for the period required to operate the service, meet contractual commitments, and satisfy legal/regulatory requirements." },
   { title: "5. Security Measures", body: "We apply authentication controls, access restrictions, anti-bot protections, and operational safeguards to reduce misuse and unauthorised access." },
   { title: "6. Your Rights", body: "Subject to applicable law, you may request access, correction, restriction, deletion, and portability of personal data." },
-  { title: "7. Contact", body: "privacy@universalagent.local" },
+  { title: "7. Contact", body: "privacy@asistoria.local" },
 ];
 
 export default function PrivacyPage() {
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
     >
       <div style={{ maxWidth: "820px", margin: "0 auto" }}>
         <Link href="/" style={{ color: "#7dd3fc", textDecoration: "none", fontSize: "13px", fontWeight: 600, display: "inline-block", marginBottom: "24px" }}>
-          ← Back to Universal Agent
+          ← Back to Asistoria
         </Link>
         <div
           style={{
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
           <div style={{ color: "#7dd3fc", fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "8px" }}>Legal</div>
           <h1 style={{ marginTop: 0, color: "#e0f2fe", fontSize: "34px", fontWeight: 900, letterSpacing: "-0.02em" }}>Privacy Policy</h1>
           <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "32px", lineHeight: 1.6 }}>
-            Effective date: 17 April 2026. This policy explains how Universal Agent processes personal data for account management, call operations, and service delivery.
+            Effective date: 17 April 2026. This policy explains how Asistoria processes personal data for account management, call operations, and service delivery.
           </p>
 
           {SECTIONS.map((section) => (

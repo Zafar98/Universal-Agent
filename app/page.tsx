@@ -1,9 +1,13 @@
 "use client";
 
-import HomePage from "@/components/HomePage";
+import { HomepageTrialExperience } from "@/components/HomepageTrialExperience";
+import { AutonomyDemoFeed } from "@/components/AutonomyDemoFeed";
 
 export default function Home() {
   return (
-    <HomePage />
+    <>
+      <HomepageTrialExperience />
+      <AutonomyDemoFeed />
+    </>
   );
 }
