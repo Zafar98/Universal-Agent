@@ -1,3 +1,40 @@
+export interface UpdateBusinessAccountProfileInput {
+  businessId: string;
+  businessName?: string;
+  businessModelId?: string;
+  agentCount?: number;
+  selectedPlan?: string;
+  selectedIntegration?: string;
+  subscriptionStatus?: string;
+  activationCompletedAt?: string | null;
+}
+
+export async function updateBusinessAccountProfile(
+  input: UpdateBusinessAccountProfileInput
+): Promise<BusinessAccount | null> {
+  if (!input.businessId) return null;
+
+  // In-memory update (replace with DB logic as needed)
+  const existing = memoryStore.accounts.get(input.businessId);
+  if (!existing) return null;
+
+  const updated: BusinessAccount = {
+    ...existing,
+    businessName: input.businessName ?? existing.businessName,
+    businessModelId: (input.businessModelId as BusinessModelId) ?? existing.businessModelId,
+    agentCount: input.agentCount ?? existing.agentCount,
+    selectedPlan: input.selectedPlan ? normalizePlanTier(input.selectedPlan) : existing.selectedPlan,
+    selectedIntegration: input.selectedIntegration ? normalizeIntegrationMethod(input.selectedIntegration) : existing.selectedIntegration,
+    subscriptionStatus: input.subscriptionStatus ? normalizeSubscriptionStatus(input.subscriptionStatus) : existing.subscriptionStatus,
+    activationCompletedAt:
+      input.activationCompletedAt !== undefined
+        ? input.activationCompletedAt
+        : existing.activationCompletedAt,
+  };
+
+  memoryStore.accounts.set(updated.id, updated);
+  return updated;
+}
 import { randomBytes, randomUUID, createHash, timingSafeEqual } from "crypto";
 import { getPool, hasDatabaseConfig } from "@/lib/postgres";
 import { BusinessModelId } from "@/lib/businessModels";
@@ -941,8 +978,6 @@ export interface CreateBusinessAccountAdminInput {
   selectedPlan?: string;
   selectedIntegration?: string;
   subscriptionStatus?: string;
-  email?: string;
-  phone?: string;
 }
 
 export async function createBusinessAccountFromAdmin(input: CreateBusinessAccountAdminInput): Promise<BusinessAccount> {
@@ -960,14 +995,3 @@ export async function createBusinessAccountFromAdmin(input: CreateBusinessAccoun
   } as BusinessAccount;
 }
 
-export async function updateBusinessAccountProfile(): Promise<BusinessAccount | null> {
-  return null;
-}
-
-export async function createBusinessPasswordResetToken(): Promise<null> {
-  return null;
-}
-
-export async function resetBusinessPassword(): Promise<boolean> {
-  return false;
-}

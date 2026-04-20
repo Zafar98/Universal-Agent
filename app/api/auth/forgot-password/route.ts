@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.APP_BASE_URL || request.nextUrl.origin;
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(reset.token)}`;
     const delivery = await sendPasswordResetEmail({
-      businessName: reset.account.businessName,
-      email: reset.account.email,
+      businessName: reset.account.businessName || "Business",
+      email: reset.account.email || "",
       resetUrl,
     });
 
