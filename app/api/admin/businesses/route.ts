@@ -218,8 +218,6 @@ export async function POST(request: NextRequest) {
       selectedPlan: String(body.selectedPlan || "starter"),
       selectedIntegration: String(body.selectedIntegration || "website-widget"),
       subscriptionStatus: String(body.subscriptionStatus || "pending_payment"),
-      email: body.email ? String(body.email) : undefined,
-      phone: body.phone ? String(body.phone) : undefined,
     });
 
     const workspace = await getEffectiveBusinessWorkspace({
