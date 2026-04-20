@@ -941,6 +941,8 @@ export interface CreateBusinessAccountAdminInput {
   selectedPlan?: string;
   selectedIntegration?: string;
   subscriptionStatus?: string;
+  email?: string;
+  phone?: string;
 }
 
 export async function createBusinessAccountFromAdmin(input: CreateBusinessAccountAdminInput): Promise<BusinessAccount> {

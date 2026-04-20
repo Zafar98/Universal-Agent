@@ -114,5 +114,6 @@ export {
   buildTenantConfigFromBusiness,
   getCallClosingLineForTenant,
   getTaskCompletionDirectiveForTenant,
+  getCallHangupPolicyForTenant,
 };
 export type { BusinessUnit, DepartmentProfile, TenantConfig } from "@/lib/businessModels";
