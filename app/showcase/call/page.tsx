@@ -20,6 +20,7 @@ type DemoCallRecord = {
   outcome: string;
   workflowSummary: string;
   savedItems: string[];
+  actions: string[]; // New: list of actions agent performed
 };
 
 const CALL_LIMIT_MS = 60_000;
@@ -155,68 +156,42 @@ export default function CallShowcasePage() {
     }
   }, []);
 
+  // Always use a static, correct mapping for demo businesses to ensure tenantId is set
   useEffect(() => {
-    fetch("/api/business-models")
-      .then((response) => response.json())
-      .then((data) => {
-        const list: BusinessOption[] = (data.businessModels || []).map((model: BusinessOption) => ({
-          id: model.id,
-          tenantId: model.tenantId,
-          name: model.name,
-          summary: model.summary,
-        }));
-
-        if (list.length > 0) {
-          setBusinesses(list);
-          setSelectedBusinessId(list[0].id);
-          return;
-        }
-
-        setBusinesses([
-          {
-            id: "housing-association",
-            tenantId: "developers-housing",
-            name: "Housing",
-            summary: "Test emergency repairs, tenancy issues, and complaint handling.",
-          },
-          {
-            id: "hotel",
-            tenantId: "grand-harbor-hotel",
-            name: "Hotel",
-            summary: "Test reservation changes, concierge requests, and guest support.",
-          },
-          {
-            id: "restaurant",
-            tenantId: "sunset-bistro",
-            name: "Restaurant",
-            summary: "Test booking requests, order handling, and service questions.",
-          },
-        ]);
-        setSelectedBusinessId("housing-association");
-      })
-      .catch(() => {
-        setBusinesses([
-          {
-            id: "housing-association",
-            tenantId: "developers-housing",
-            name: "Housing",
-            summary: "Test emergency repairs, tenancy issues, and complaint handling.",
-          },
-          {
-            id: "hotel",
-            tenantId: "grand-harbor-hotel",
-            name: "Hotel",
-            summary: "Test reservation changes, concierge requests, and guest support.",
-          },
-          {
-            id: "restaurant",
-            tenantId: "sunset-bistro",
-            name: "Restaurant",
-            summary: "Test booking requests, order handling, and service questions.",
-          },
-        ]);
-        setSelectedBusinessId("housing-association");
-      });
+    const list: BusinessOption[] = [
+      {
+        id: "housing-association",
+        tenantId: "developers-housing",
+        name: "Housing",
+        summary: "Test emergency repairs, tenancy issues, and complaint handling.",
+      },
+      {
+        id: "hotel",
+        tenantId: "grand-harbor-hotel",
+        name: "Hotel",
+        summary: "Test reservation changes, concierge requests, and guest support.",
+      },
+      {
+        id: "restaurant",
+        tenantId: "sunset-bistro",
+        name: "Restaurant",
+        summary: "Test booking requests, order handling, and service questions.",
+      },
+      {
+        id: "energy-provider",
+        tenantId: "city-energy",
+        name: "Energy Provider",
+        summary: "Test outage reporting, billing, and account support.",
+      },
+      {
+        id: "borough-council",
+        tenantId: "borough-council",
+        name: "Borough Council",
+        summary: "Test council services, complaints, and general enquiries.",
+      },
+    ];
+    setBusinesses(list);
+    setSelectedBusinessId(list[0].id);
   }, []);
 
   useEffect(() => {
@@ -285,6 +260,8 @@ export default function CallShowcasePage() {
   }, []);
 
   const selectedBusiness = businesses.find((item) => item.id === selectedBusinessId);
+  // Defensive: If not found, fallback to first business
+  const effectiveBusiness = selectedBusiness || businesses[0];
 
   function saveDemoRecord(reason: "completed" | "timed_out") {
     if (callRecordSavedRef.current) {
@@ -296,6 +273,37 @@ export default function CallShowcasePage() {
     const workflowCompleted = Math.max(0, Math.min(workflowStep + 1, CALL_WORKFLOW_STEPS.length));
     const mode: "live" | "simulation" = shouldUseSimulation ? "simulation" : "live";
     const endedAt = new Date().toISOString();
+
+    // Simulate autonomous agent actions based on business type
+    let actions: string[] = [];
+    if (businessName.toLowerCase().includes("hotel")) {
+      actions = [
+        "Identified caller intent: Book a hotel room",
+        "Checked room availability",
+        "Reserved room for caller",
+        "Sent booking confirmation email"
+      ];
+    } else if (businessName.toLowerCase().includes("housing")) {
+      actions = [
+        "Identified caller intent: Request a repair",
+        "Logged maintenance ticket",
+        "Scheduled repair appointment",
+        "Sent confirmation to caller"
+      ];
+    } else if (businessName.toLowerCase().includes("restaurant")) {
+      actions = [
+        "Identified caller intent: Book a table",
+        "Checked table availability",
+        "Reserved table for caller",
+        "Sent reservation confirmation"
+      ];
+    } else {
+      actions = [
+        "Identified caller intent",
+        "Processed request",
+        "Provided resolution or next steps"
+      ];
+    }
 
     const record: DemoCallRecord = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -312,6 +320,7 @@ export default function CallShowcasePage() {
         mode === "live"
           ? ["Caller intent", "Business route", "Transcript summary", "Case fields", "Outcome status"]
           : ["Scenario selected", "Intent classification", "Recommended action", "Escalation path", "Outcome status"],
+      actions,
     };
 
     callRecordSavedRef.current = true;
@@ -326,7 +335,7 @@ export default function CallShowcasePage() {
   }
 
   const handleStart = useCallback(async () => {
-    if (!selectedBusiness) {
+    if (!effectiveBusiness) {
       return;
     }
 
@@ -337,8 +346,10 @@ export default function CallShowcasePage() {
     callRecordSavedRef.current = false;
     setCallStartedAt(Date.now());
     if (!shouldSimulateNow) {
+      // TEMP: Log the tenantId being sent to the backend
+      console.log("[CALL DEBUG] Starting call with tenantId:", effectiveBusiness.tenantId, effectiveBusiness.name);
       await startCall({
-        tenantId: selectedBusiness.tenantId,
+        tenantId: effectiveBusiness.tenantId,
         isDemoCall: true,
         fingerprint: fingerprint || computeDemoFingerprint(),
       });
@@ -676,9 +687,46 @@ export default function CallShowcasePage() {
                   <div style={{ color: "#cbd5e1", fontSize: "13px", lineHeight: 1.55, marginBottom: "8px" }}>
                     {record.outcome}
                   </div>
+                  {/* Enhanced call summary */}
                   <div style={{ color: "#64748b", fontSize: "12px" }}>
-                    Saved: {record.savedItems.join(" • ")}
+                    <strong>Saved:</strong> {record.savedItems.join(" • ")}
                   </div>
+                  <div style={{ color: "#64748b", fontSize: "12px" }}>
+                    <strong>Caller:</strong> {record.callerName || "-"}
+                  </div>
+                  <div style={{ color: "#64748b", fontSize: "12px" }}>
+                    <strong>Reason:</strong> {record.reason || "-"}
+                  </div>
+                  {/* Checklist */}
+                  <div style={{ margin: "8px 0 0 0", fontSize: "12px" }}>
+                    <strong>Checklist:</strong>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {/* Example checklist, customize as needed */}
+                      <li style={{ color: record.callerName ? "#a3e635" : "#f87171" }}>
+                        {record.callerName ? "✔" : "✗"} Caller name
+                      </li>
+                      <li style={{ color: record.reason ? "#a3e635" : "#f87171" }}>
+                        {record.reason ? "✔" : "✗"} Reason captured
+                      </li>
+                      <li style={{ color: record.actions && record.actions.length > 0 ? "#a3e635" : "#f87171" }}>
+                        {record.actions && record.actions.length > 0 ? "✔" : "✗"} Actions decided
+                      </li>
+                      <li style={{ color: record.savedItems && record.savedItems.length >= 3 ? "#a3e635" : "#f87171" }}>
+                        {record.savedItems && record.savedItems.length >= 3 ? "✔" : "✗"} All required info
+                      </li>
+                      {/* Add more checklist items as needed */}
+                    </ul>
+                  </div>
+                  {record.actions && record.actions.length > 0 && (
+                    <div style={{ color: "#a3e635", fontSize: "12px", marginTop: "6px" }}>
+                      <strong>Agent Actions:</strong>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        {record.actions.map((action, idx) => (
+                          <li key={idx}>{action}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
