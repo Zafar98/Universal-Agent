@@ -517,9 +517,7 @@ export function useVoiceCall() {
               sendDataChannelEvent({
                 type: "response.create",
                 response: {
-                  instructions: `The customer has explicitly confirmed all details. End the call now with this exact ending line: '${closingLine}'`,
-                  modalities: ["audio"],
-                  output_modalities: ["audio"],
+                  instructions: `The customer has explicitly confirmed all details. End the call now with this exact ending line: '${closingLine}'`
                 },
               });
             }
@@ -580,9 +578,7 @@ export function useVoiceCall() {
                 type: "response.create",
                 response: {
                   instructions:
-                    "Before continuing, verify identity now using the required factors for this business. Ask only for missing details and keep it brief.",
-                  modalities: ["audio"],
-                  output_modalities: ["audio"],
+                    "Before continuing, verify identity now using the required factors for this business. Ask only for missing details and keep it brief."
                 },
               });
             }
@@ -595,9 +591,7 @@ export function useVoiceCall() {
               sendDataChannelEvent({
                 type: "response.create",
                 response: {
-                  instructions: `The caller indicates the issue is resolved. Close the call now with this exact ending line: '${closingLine}'`,
-                  modalities: ["audio"],
-                  output_modalities: ["audio"],
+                  instructions: `The caller indicates the issue is resolved. Close the call now with this exact ending line: '${closingLine}'`
                 },
               });
             }
@@ -721,9 +715,7 @@ export function useVoiceCall() {
               sendDataChannelEvent({
                 type: "response.create",
                 response: {
-                  instructions: `The call is not yet ready to close. ${missingPrompt} Ask for these specific details, then confirm with the customer before closing.`,
-                  modalities: ["audio"],
-                  output_modalities: ["audio"],
+                  instructions: `The call is not yet ready to close. ${missingPrompt} Ask for these specific details, then confirm with the customer before closing.`
                 },
               });
 
@@ -743,9 +735,7 @@ export function useVoiceCall() {
               sendDataChannelEvent({
                 type: "response.create",
                 response: {
-                  instructions: `Before closing, confirm these details with the customer. Say: "Let me confirm: ${summary} Is that all correct?" Listen for confirmation. Only after they explicitly confirm should you say goodbye and close the call.`,
-                  modalities: ["audio"],
-                  output_modalities: ["audio"],
+                  instructions: `Before closing, confirm these details with the customer. Say: "Let me confirm: ${summary} Is that all correct?" Listen for confirmation. Only after they explicitly confirm should you say goodbye and close the call.`
                 },
               });
 
@@ -771,9 +761,7 @@ export function useVoiceCall() {
             sendDataChannelEvent({
               type: "response.create",
               response: {
-                instructions: `All required details are confirmed. End the call now with this exact ending line: '${closingLine}'`,
-                modalities: ["audio"],
-                output_modalities: ["audio"],
+                instructions: `All required details are confirmed. End the call now with this exact ending line: '${closingLine}'`
               },
             });
 
@@ -943,9 +931,7 @@ export function useVoiceCall() {
               tenantProfileRef.current
                 ? getCallClosingLineForTenant(tenantProfileRef.current)
                 : "Your request is complete. Thanks for calling. Take care. Goodbye."
-            }'. Begin with fast verification first. Collect two identity factors, confirm verification once, classify intent, collect minimum details, complete the task, and end without filler. After verification is complete, never ask for verification again during this same request.`,
-            modalities: ["audio"],
-            output_modalities: ["audio"],
+            }'. Begin with fast verification first. Collect two identity factors, confirm verification once, classify intent, collect minimum details, complete the task, and end without filler. After verification is complete, never ask for verification again during this same request.`
           },
         });
       };

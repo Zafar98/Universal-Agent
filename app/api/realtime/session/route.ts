@@ -11,6 +11,7 @@ import { getAuthenticatedBusinessFromRequest } from "@/lib/sessionAuth";
 import { getEffectiveBusinessWorkspace } from "@/lib/businessWorkspaceStore";
 import { getBusinessAccountByTenantId } from "@/lib/businessAuthStore";
 import { getDemoSession, markDemoUsed, DEMO_COOKIE_NAME } from "@/lib/demoUserStore";
+import { getDemoTryCount, incrementDemoTryCount, DEMO_TRY_LIMIT } from "@/lib/trialTrackingStore";
 import { getRequestIp } from "@/lib/botProtection";
 import {
   buildIdentityHash,
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const demoMode = (process.env.DEMO_MODE || "live").toLowerCase();
 
-    // ─── Demo user gate ───────────────────────────────────────────────────────
+    // ─── Demo user gate with 3-try limit ─────────────────────────────────────
     const isDemoRequest = Boolean(body.isDemoCall);
     if (isDemoRequest) {
       if (demoMode === "disabled") {
@@ -73,38 +74,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const demoCookie = request.cookies.get(DEMO_COOKIE_NAME)?.value || "";
-      const demoSession = await getDemoSession(demoCookie);
-
-      if (demoSession?.hasUsedDemo && !demoSession.subscribed) {
+      // Use IP + fingerprint + cookie to track demo tries
+      const ip = getRequestIp(request);
+      const fingerprint = String(body.fingerprint || "");
+      const identityHash = buildIdentityHash(ip, fingerprint);
+      const demoTryCount = await getDemoTryCount(identityHash);
+      if (demoTryCount >= DEMO_TRY_LIMIT) {
         return NextResponse.json(
-          { error: "Your shared 60-second demo window has been used. Please subscribe to continue." },
+          { error: `You have used all ${DEMO_TRY_LIMIT} demo calls. Please sign up to continue.` },
           { status: 403 }
         );
       }
-
-      // ── IP + fingerprint identity check (independent of account) ──────────
-      // This prevents a user from creating a new account to claim another demo
-      // window after closing the browser or using a private/incognito tab.
-      if (!demoSession?.subscribed) {
-        const ip = getRequestIp(request);
-        const fingerprint = String(body.fingerprint || "");
-        const identityHash = buildIdentityHash(ip, fingerprint);
-
-        const trialStatus = await getTrialWindowStatus(identityHash);
-        if (trialStatus.isBlocked) {
-          if (demoSession && !demoSession.hasUsedDemo) {
-            await markDemoUsed(demoSession.userId);
-          }
-          return NextResponse.json(
-            { error: "This device has already used the shared 60-second demo window. Please subscribe to continue." },
-            { status: 403 }
-          );
-        }
-
-        await startOrResumeTrialWindow(identityHash, ip);
-      }
-      // ─────────────────────────────────────────────────────────────────────
+      await incrementDemoTryCount(identityHash);
     }
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -202,8 +183,6 @@ export async function POST(request: NextRequest) {
           type: "realtime",
           model: "gpt-realtime",
           instructions: realtimeInstructions,
-          modalities: ["audio"],
-          output_modalities: ["audio"],
           audio: {
             input: {
               transcription: {

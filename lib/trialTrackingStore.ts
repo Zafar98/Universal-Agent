@@ -1,3 +1,17 @@
+// Demo try limit logic
+export const DEMO_TRY_LIMIT = 3;
+export const memDemoTries = new Map<string, number>();
+const memDemoTries = new Map<string, number>();
+
+export async function getDemoTryCount(identityHash: string): Promise<number> {
+  // In-memory only for now; can be extended to persistent store
+  return memDemoTries.get(identityHash) || 0;
+}
+
+export async function incrementDemoTryCount(identityHash: string): Promise<void> {
+  const current = memDemoTries.get(identityHash) || 0;
+  memDemoTries.set(identityHash, current + 1);
+}
 import { createHash } from "crypto";
 import { getPool, hasDatabaseConfig } from "@/lib/postgres";
 
