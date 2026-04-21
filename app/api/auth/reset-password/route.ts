@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    const ok = await resetBusinessPassword({ token, password: password.trim() });
+    const ok = await resetBusinessPassword(token, password.trim());
     if (!ok) {
       return NextResponse.json({ error: "Reset link is invalid or expired." }, { status: 400 });
     }
