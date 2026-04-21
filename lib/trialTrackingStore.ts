@@ -1,7 +1,6 @@
 // Demo try limit logic
 export const DEMO_TRY_LIMIT = 3;
 export const memDemoTries = new Map<string, number>();
-const memDemoTries = new Map<string, number>();
 
 export async function getDemoTryCount(identityHash: string): Promise<number> {
   // In-memory only for now; can be extended to persistent store
