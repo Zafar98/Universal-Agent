@@ -1,3 +1,48 @@
+// Password reset token store (in-memory for MVP)
+const passwordResetTokens = new Map<string, { token: string; businessId: string; expiresAt: number }>();
+
+/**
+ * Creates a password reset token for a business account and stores it in-memory.
+ * @param businessId The business account ID
+ * @returns The reset token string
+ */
+export async function createBusinessPasswordResetToken(businessId: string): Promise<string | null> {
+  const account = memoryStore.accounts.get(businessId);
+  if (!account) return null;
+  // Generate a secure random token
+  const token = randomBytes(32).toString("hex");
+  // Token expires in 1 hour
+  const expiresAt = Date.now() + 60 * 60 * 1000;
+  passwordResetTokens.set(token, { token, businessId, expiresAt });
+  return token;
+}
+
+/**
+ * Resets the password for a business account using a valid reset token.
+ * @param token The reset token
+ * @param newPassword The new password to set
+ * @returns True if successful, false otherwise
+ */
+export async function resetBusinessPassword(token: string, newPassword: string): Promise<boolean> {
+  const entry = passwordResetTokens.get(token);
+  if (!entry || entry.expiresAt < Date.now()) {
+    passwordResetTokens.delete(token);
+    return false;
+  }
+  const account = memoryStore.accounts.get(entry.businessId);
+  if (!account) {
+    passwordResetTokens.delete(token);
+    return false;
+  }
+  // Update password
+  const salt = createPasswordSalt();
+  const hash = hashPassword(newPassword, salt);
+  account.passwordSalt = salt;
+  account.passwordHash = hash;
+  memoryStore.accounts.set(account.id, account);
+  passwordResetTokens.delete(token);
+  return true;
+}
 export interface UpdateBusinessAccountProfileInput {
   businessId: string;
   businessName?: string;
