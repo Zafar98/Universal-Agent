@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/components/BrandMark";
 
+
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/showcase/call", label: "Demo call" },
-  { href: "/showcase/email", label: "Demo Email" },
-  { href: "/how-to", label: "How To Integrate" },
+  { href: "/showcase/email", label: "Demo" },
+  { href: "/features", label: "Features" },
+  { href: "/integrations", label: "Integrations" },
   { href: "/subscription", label: "Pricing" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function PublicNav() {
@@ -65,7 +67,7 @@ export function PublicNav() {
           className="ua-nav-desktop"
           style={{ display: "flex", alignItems: "center", gap: "28px" }}
         >
-          <div style={{ display: "flex", gap: "20px" }}>
+          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -76,6 +78,7 @@ export function PublicNav() {
                   fontSize: "14px",
                   fontWeight: pathname === link.href ? 700 : 500,
                   transition: "color 140ms",
+                  padding: "0 2px"
                 }}
               >
                 {link.label}
@@ -85,6 +88,25 @@ export function PublicNav() {
 
           {/* CTA group */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <Link
+              href="/showcase/call"
+              style={{
+                background: "linear-gradient(135deg, #22c55e 0%, #2563eb 100%)",
+                color: "white",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: 700,
+                padding: "8px 20px",
+                borderRadius: "999px",
+                boxShadow: "0 4px 14px rgba(34,197,94,0.3)",
+                whiteSpace: "nowrap",
+                marginRight: "4px",
+                transition: "transform 0.15s, box-shadow 0.15s",
+              }}
+              aria-label="Test the Agent live demo"
+            >
+              Test the Agent
+            </Link>
             <Link
               href="/login"
               style={{
@@ -162,7 +184,7 @@ export function PublicNav() {
                 textDecoration: "none",
                 fontSize: "15px",
                 fontWeight: 600,
-                padding: "6px 0",
+                padding: "6px 0"
               }}
             >
               {link.label}
