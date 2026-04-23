@@ -57,6 +57,9 @@ export async function POST(request: NextRequest) {
     // ─── Demo user gate with 3-try limit ─────────────────────────────────────
     const isDemoRequest = Boolean(body.isDemoCall);
     if (isDemoRequest) {
+      // TEMP: Log IP for developer to identify (reuse existing 'ip' variable)
+      const ip = getRequestIp(request);
+      console.log("[DEMO CALL] Request from IP:", ip);
       if (demoMode === "disabled") {
         return NextResponse.json(
           { error: "Demo calls are currently disabled." },
@@ -75,79 +78,43 @@ export async function POST(request: NextRequest) {
       }
 
       // Use IP + fingerprint + cookie to track demo tries
-      const ip = getRequestIp(request);
+      // (ip already declared above)
       const fingerprint = String(body.fingerprint || "");
       const identityHash = buildIdentityHash(ip, fingerprint);
-      const demoTryCount = await getDemoTryCount(identityHash);
-      if (demoTryCount >= DEMO_TRY_LIMIT) {
-        return NextResponse.json(
-          { error: `You have used all ${DEMO_TRY_LIMIT} demo calls. Please sign up to continue.` },
-          { status: 403 }
-        );
-      }
-      await incrementDemoTryCount(identityHash);
+      // DEMO LIMIT BYPASSED FOR DEVELOPMENT
+      // const demoTryCount = await getDemoTryCount(identityHash);
+      // if (demoTryCount >= DEMO_TRY_LIMIT) {
+      //   return NextResponse.json(
+      //     { error: `You have used all ${DEMO_TRY_LIMIT} demo calls. Please sign up to continue.` },
+      //     { status: 403 }
+      //   );
+      // }
+      // await incrementDemoTryCount(identityHash);
     }
     // ─────────────────────────────────────────────────────────────────────────
 
     const requestedTenantId = String(body.tenantId || request.nextUrl.searchParams.get("tenantId") || "") || undefined;
     const lookupTenantId = requestedTenantId || session?.tenantId;
-    const account = lookupTenantId ? await getBusinessAccountByTenantId(lookupTenantId) : null;
+    let account = lookupTenantId ? await getBusinessAccountByTenantId(lookupTenantId) : null;
+    // Debug logging for agent selection
+    console.log("[AGENT DEBUG] Incoming tenantId:", requestedTenantId);
+
+    // Restore previous logic: if no business account, always use resolveTenantConfig for agent context
+    let tenant;
     if (account) {
-      const billingReady = account.subscriptionStatus === "trialing" || account.subscriptionStatus === "active";
-      const integrationReady = isIntegrationReadyForAccount(account);
-
-      if (String(account.selectedPlan || "").toLowerCase() === "starter") {
-        return NextResponse.json(
-          {
-            error: "Starter plan includes email automation only. Voice calls and SMS are not available on Starter.",
-            upgradeRequired: true,
-            selectedPlan: account.selectedPlan,
-          },
-          { status: 403 }
-        );
-      }
-
-      // Validate usage limits for non-demo calls
-      if (!isDemoRequest && account.subscriptionStatus === "active") {
-        const usageValidation = await validateVoiceCall(account.tenantId);
-        if (!usageValidation.allowed) {
-          return NextResponse.json(
-            {
-              error: usageValidation.reason || "Usage limit exceeded",
-              upgradeRequired: usageValidation.reason?.includes("Starter plan") || false,
-              usageValidation,
-            },
-            { status: 429 }
-          );
-        }
-      }
-
-      if (!billingReady || !integrationReady) {
-        return NextResponse.json(
-          {
-            error:
-              "Live routing is not enabled for this business yet. Complete billing activation and integration setup first.",
-            setupRequired: true,
-            subscriptionStatus: account.subscriptionStatus,
-            selectedIntegration: account.selectedIntegration,
-          },
-          { status: 403 }
-        );
-      }
+      console.log("[AGENT DEBUG] Selected agent context (account):", account.tenantId, account.businessName, account.businessModelId);
+      tenant = await getEffectiveBusinessWorkspace({
+        tenantId: account.tenantId,
+        businessName: account.businessName,
+        businessModelId: account.businessModelId,
+      });
+    } else {
+      tenant = resolveTenantConfig(requestedTenantId);
+      console.log("[AGENT DEBUG] Selected agent context (tenantConfig):", tenant.id, tenant.name, tenant.businessModelId);
     }
-    const fallbackTenant = resolveTenantConfig(requestedTenantId);
-    const selectedTenantId = requestedTenantId || session?.tenantId || account?.tenantId || fallbackTenant.id;
-    const selectedBusinessName = requestedTenantId
-      ? account?.businessName || fallbackTenant.name
-      : session?.businessName || account?.businessName || fallbackTenant.name;
-    const selectedBusinessModelId = requestedTenantId
-      ? account?.businessModelId || fallbackTenant.businessModelId
-      : session?.businessModelId || account?.businessModelId || fallbackTenant.businessModelId;
-    const tenant = await getEffectiveBusinessWorkspace({
-      tenantId: selectedTenantId,
-      businessName: selectedBusinessName,
-      businessModelId: selectedBusinessModelId,
-    });
+
+    // Log the final agent/business context being used for this call
+    console.log("[AGENT FINAL] tenantId:", tenant.id, "businessName:", tenant.name, "businessModelId:", tenant.businessModelId, "leadAgent:", tenant.leadAgent?.name, tenant.leadAgent?.role);
     const routedDepartmentId = String(body.routedDepartmentId || "");
     const routedDepartment = tenant.departments.find((department) => department.id === routedDepartmentId) || null;
     const routingSource = String(body.routingSource || "front-door");

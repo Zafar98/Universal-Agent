@@ -1,7 +1,12 @@
 "use client";
 
+
 import { useEffect, useRef, useState, useCallback } from "react";
+import { DemoScenarioSelector } from "@/components/DemoScenarioSelector";
 import { useVoiceCall } from "@/lib/useVoiceCall";
+import { CallRecordingPlayback } from "@/components/CallRecordingPlayback";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { DemoFeedbackPrompt } from "@/components/DemoFeedbackPrompt";
 
 const TRIAL_SECONDS = 60;
 
@@ -394,6 +399,7 @@ export default function DemoPage() {
   const [businesses, setBusinesses] = useState<BusinessOption[]>([]);
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
   const [trialSecondsLeft, setTrialSecondsLeft] = useState(TRIAL_SECONDS);
+  const [selectedScenario, setSelectedScenario] = useState("general");
   const [callPhase, setCallPhase] = useState<"idle" | "active" | "ended">("idle");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [deviceBlocked, setDeviceBlocked] = useState(false);
@@ -578,6 +584,7 @@ export default function DemoPage() {
       tenantId: activeBusiness.tenantId,
       isDemoCall: true,
       fingerprint,
+      scenario: selectedScenario,
     } as Parameters<typeof startCall>[0]);
     if (!isSubscribed) {
       void refreshTrialStatus();
@@ -661,6 +668,7 @@ export default function DemoPage() {
           fontFamily: "system-ui, -apple-system, sans-serif",
         }}
       >
+        <OnboardingTour />
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <h1
@@ -856,6 +864,9 @@ export default function DemoPage() {
               </p>
             )}
 
+            {/* Demo scenario selector */}
+            <DemoScenarioSelector onSelect={setSelectedScenario} />
+
             <button
               onClick={handleStartCall}
               disabled={callState.connectionStatus === "connecting"}
@@ -1029,6 +1040,12 @@ export default function DemoPage() {
                 ? "Thanks for calling. Start a new call whenever you're ready."
                 : trialReason || "Your shared demo window has ended. Subscribe for unlimited access to all business agents."}
             </p>
+
+            {/* Demo call recording playback (sample audio) */}
+            <CallRecordingPlayback audioUrl="/sample-demo-call.mp3" />
+
+            {/* Prompt instant feedback after demo */}
+            <DemoFeedbackPrompt onSubmit={() => {}} />
 
             {isSubscribed ? (
               <button

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const ApiPlayground = dynamic(() => import("@/components/ApiPlayground"), { ssr: false });
 
 type BusinessModelCard = {
   id: string;
@@ -348,7 +350,6 @@ export default function DashboardPage() {
         contractorName: "",
         contractorEta: "",
       };
-
       return {
         ...prev,
         [id]: {

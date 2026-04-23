@@ -51,60 +51,31 @@ const INTEGRATIONS = [
 
 const PLANS = [
   {
-    name: "starter",
-    label: "Starter",
-    price: "£399/month",
-    subtitle: "Email automation for lean teams",
+    name: "digital-employee",
+    label: "Digital Employee Setup",
+    price: "£1500 setup fee (starting price)",
+    subtitle: "We design, build, and install your custom AI-powered business agent. Payment is only taken after you confirm your requirements and features.",
     tone: "#38bdf8",
     features: [
-      "Email-only AI automation",
-      "500 emails per month included",
-      "2 AI agents/departments",
-      "Basic setup guidance",
-      "Email support",
+      "Discovery call to understand your business workflows and needs",
+      "Custom agent design and proposal",
+      "No payment until you approve the plan and features",
+      "Setup fee covers initial build, configuration, and deployment",
+      "Ongoing support and maintenance available (quoted separately)",
+      "Add-ons and advanced features quoted after requirements are agreed",
+      "Transparent, collaborative process—no hidden fees",
     ],
-    limits: ["No voice calls or SMS", "No API/webhook integrations"],
-    popular: false,
-  },
-  {
-    name: "growth",
-    label: "Growth",
-    price: "£599/month",
-    subtitle: "Live voice and routing for scaling operations",
-    tone: "#22d3ee",
-    features: [
-      "Everything in Starter",
-      "300 live voice calls per month",
-      "1,000 voice minutes per month",
-      "2,000 emails per month",
-      "Up to 5 AI agents/departments",
-      "Website widget and phone-number routing",
-      "Priority response support",
+    limits: [
+      "£1500 is the starting setup fee; additional features or integrations are quoted after requirements are agreed",
+      "No payment is taken until you confirm your plan and features",
+      "Ongoing support, maintenance, and add-ons are quoted separately",
     ],
-    limits: ["No SMS on Growth", "No custom API/webhook integrations"],
     popular: true,
-  },
-  {
-    name: "enterprise",
-    label: "Enterprise",
-    price: "£999/month",
-    subtitle: "Full omnichannel deployment and advanced controls",
-    tone: "#0ea5e9",
-    features: [
-      "Everything in Growth",
-      "1,000 live voice calls per month",
-      "5,000 voice minutes per month",
-      "10,000 emails and 2,000 SMS per month",
-      "API and webhook orchestration",
-      "Multi-site deployment",
-      "Dedicated implementation support",
-    ],
-    limits: [],
-    popular: false,
+    custom: true,
   },
 ];
 
-export default function SubscriptionPage() {
+export default function ProductPage() {
   const router = useRouter();
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
@@ -140,213 +111,63 @@ export default function SubscriptionPage() {
         {/* Page header */}
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <div style={{ color: "#67e8f9", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: "10px" }}>
-            Subscription
+            Agent Platform
           </div>
           <h1 style={{ margin: "0 0 12px", fontSize: "42px", color: "#e0f2fe", fontWeight: 900, letterSpacing: "-0.02em" }}>
-            One plan. Full Asistoria deployment.
+            Build Custom AI Agents for Any Workflow
           </h1>
           <p style={{ color: "#cbd5e1", maxWidth: "700px", margin: "0 auto", lineHeight: 1.55 }}>
-            Choose how customers reach your agent, then activate the single monthly subscription. Everything is included.
+            Choose from our agent solutions or request a bespoke build. Automate support, onboarding, booking, compliance, triage, sales, and more—across voice, email, web, and API channels. All prices are "starting from" and custom work is always quoted in advance.
           </p>
-          <div style={{ marginTop: "12px" }}>
-            <Link
-              href="/how-to"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                textDecoration: "none",
-                color: "#fde68a",
-                fontSize: "13px",
-                fontWeight: 700,
-                border: "1px solid rgba(251,191,36,0.35)",
-                background: "rgba(120,53,15,0.18)",
-                padding: "7px 14px",
-                borderRadius: "999px",
-              }}
-            >
-              Read the full integration guide →
-            </Link>
+        </div>
+
+
+        {/* Integration options info section (moved from main flow) */}
+        <div style={{
+          margin: "0 auto 48px auto",
+          maxWidth: 900,
+          background: "rgba(15,23,42,0.62)",
+          border: "1px solid rgba(56,189,248,0.18)",
+          borderRadius: 18,
+          padding: 32,
+        }}>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: "#e0f2fe", marginBottom: 10 }}>How integration works</h2>
+          <p style={{ color: "#94a3b8", fontSize: 16, marginBottom: 18 }}>
+            You can connect your agent to your business in three ways:
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
+            {INTEGRATIONS.map((integration) => (
+              <div key={integration.id} style={{
+                borderRadius: 14,
+                border: "1px solid rgba(56,189,248,0.18)",
+                background: "rgba(2,6,23,0.38)",
+                padding: 20,
+                marginBottom: 0,
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{integration.icon}</div>
+                <div style={{ color: "#e0f2fe", fontWeight: 700, fontSize: 17, marginBottom: 2 }}>{integration.title}</div>
+                <div style={{ color: "#22d3ee", fontSize: 12, fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>{integration.subtitle}</div>
+                <div style={{ color: "#94a3b8", fontSize: 13, marginBottom: 10 }}>{integration.description}</div>
+                <ul style={{ margin: 0, paddingLeft: 16, color: "#a5f3fc", fontSize: 12, lineHeight: 1.8 }}>
+                  {integration.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 18 }}>
+            <Link href="/how-to" style={{ color: "#38bdf8", fontWeight: 700, fontSize: 15, textDecoration: "underline" }}>Read the full integration guide</Link>
           </div>
         </div>
 
-        {/* Step 1 — Integration method */}
-        <div id="integration-picker" style={{ marginBottom: "48px", scrollMarginTop: "80px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "18px" }}>
-            <div
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #06b6d4, #2563eb)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 900,
-                fontSize: "13px",
-                color: "white",
-                flexShrink: 0,
-              }}
-            >
-              1
-            </div>
-            <div>
-              <div style={{ color: "#e0f2fe", fontWeight: 800, fontSize: "18px" }}>
-                How will your customers reach your agent?
-              </div>
-              <div style={{ color: "#64748b", fontSize: "13px" }}>
-                Choose the integration method that fits your deployment.
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
-            {INTEGRATIONS.map((integration) => {
-              const active = selectedIntegration === integration.id;
-              return (
-                <button
-                  key={integration.id}
-                  type="button"
-                  onClick={() => { setSelectedIntegration(integration.id); setShowHint(false); }}
-                  style={{
-                    textAlign: "left",
-                    borderRadius: "18px",
-                    border: active ? "2px solid #22d3ee" : "1px solid rgba(148,163,184,0.22)",
-                    background: active ? "rgba(6,182,212,0.1)" : "rgba(15,23,42,0.55)",
-                    padding: "22px",
-                    cursor: "pointer",
-                    boxShadow: active ? "0 0 32px rgba(34,211,238,0.2)" : "none",
-                    transition: "border 0.18s, box-shadow 0.18s, background 0.18s",
-                    width: "100%",
-                  }}
-                >
-                  <div style={{ fontSize: "28px", marginBottom: "10px" }}>{integration.icon}</div>
-                  <div
-                    style={{
-                      color: active ? "#67e8f9" : "#e2e8f0",
-                      fontWeight: 800,
-                      fontSize: "17px",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    {integration.title}
-                  </div>
-                  <div
-                    style={{
-                      color: active ? "#22d3ee" : "#64748b",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      marginBottom: "12px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                    }}
-                  >
-                    {integration.subtitle}
-                  </div>
-                  <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: 1.65, margin: "0 0 14px" }}>
-                    {integration.description}
-                  </p>
-                  <ul
-                    style={{
-                      margin: 0,
-                      paddingLeft: "16px",
-                      color: active ? "#a5f3fc" : "#64748b",
-                      fontSize: "12px",
-                      lineHeight: 1.9,
-                    }}
-                  >
-                    {integration.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
-                  </ul>
-                  {active ? (
-                    <div
-                      style={{
-                        marginTop: "14px",
-                        color: "#22d3ee",
-                        fontWeight: 800,
-                        fontSize: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      ✓ Selected — now pick your plan below
-                    </div>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-
-          {showHint ? (
-            <div
-              style={{
-                marginTop: "12px",
-                textAlign: "center",
-                color: "#fca5a5",
-                fontSize: "13px",
-                border: "1px solid rgba(239,68,68,0.35)",
-                background: "rgba(127,29,29,0.22)",
-                borderRadius: "10px",
-                padding: "8px 12px",
-              }}
-            >
-              Please select an integration method above before continuing.
-            </div>
-          ) : !selectedIntegration ? (
-            <div
-              style={{
-                marginTop: "14px",
-                textAlign: "center",
-                color: "#64748b",
-                fontSize: "13px",
-              }}
-            >
-              ↑ Select an integration method above before choosing a plan.
-            </div>
-          ) : null}
-        </div>
-
-        {/* Step 2 — Pricing plans */}
+        {/* Product list */}
         <div style={{ marginBottom: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "18px" }}>
-            <div
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: selectedIntegration
-                  ? "linear-gradient(135deg, #06b6d4, #2563eb)"
-                  : "rgba(100,116,139,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 900,
-                fontSize: "13px",
-                color: "white",
-                flexShrink: 0,
-              }}
-            >
-              2
-            </div>
-            <div>
-              <div style={{ color: selectedIntegration ? "#e0f2fe" : "#64748b", fontWeight: 800, fontSize: "18px" }}>
-                Activate your monthly subscription
-              </div>
-              {selectedIntegrationData ? (
-                <div style={{ color: "#22d3ee", fontSize: "13px" }}>
-                  Deploying via {selectedIntegrationData.title}
-                </div>
-              ) : (
-                <div style={{ color: "#64748b", fontSize: "13px" }}>
-                  Complete step 1 first.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
+          <h2 style={{ color: "#7dd3fc", fontSize: "28px", fontWeight: 800, marginBottom: "18px", textAlign: "center" }}>Digital Employee Setup & Pricing</h2>
+          <p style={{ color: "#fbbf24", textAlign: "center", marginBottom: 24, fontWeight: 700, fontSize: 16 }}>
+            One simple setup fee: £1500 (starting price). No payment is taken until you confirm your requirements and features. All add-ons and advanced features are quoted after we understand your needs—no hidden fees, no surprises.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "18px" }}>
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
@@ -358,7 +179,11 @@ export default function SubscriptionPage() {
                   boxShadow: plan.popular
                     ? `0 20px 38px ${plan.tone}55`
                     : "0 18px 32px rgba(2,6,23,0.45)",
-                  padding: "20px",
+                  padding: "24px 20px 20px 20px",
+                  minHeight: 440,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
                 }}
               >
                 {plan.popular ? (
@@ -383,7 +208,7 @@ export default function SubscriptionPage() {
 
                 <h2 style={{ marginTop: 0, marginBottom: "6px", color: "#e2e8f0", fontSize: "26px" }}>{plan.label}</h2>
                 <div style={{ color: "#67e8f9", fontSize: "30px", fontWeight: 800, marginBottom: "8px" }}>
-                  {plan.price}
+                  {plan.price} <span style={{ fontSize: 14, color: "#fbbf24", fontWeight: 700 }}>(from)</span>
                 </div>
                 <div style={{ color: "#cbd5e1", fontSize: "13px", marginBottom: "16px" }}>
                   {plan.subtitle}
@@ -399,7 +224,7 @@ export default function SubscriptionPage() {
                     letterSpacing: "0.06em",
                   }}
                 >
-                  Included features
+                  What's Included
                 </div>
                 <ul style={{ margin: 0, paddingLeft: "18px", color: "#e2e8f0", lineHeight: 1.75, fontSize: "13px" }}>
                   {plan.features.map((feature) => (
@@ -420,7 +245,7 @@ export default function SubscriptionPage() {
                         letterSpacing: "0.06em",
                       }}
                     >
-                      Limitations
+                      Add-ons & Custom Work
                     </div>
                     <ul style={{ margin: 0, paddingLeft: "18px", color: "#fecdd3", lineHeight: 1.65, fontSize: "12px" }}>
                       {plan.limits.map((limit) => (
@@ -430,29 +255,53 @@ export default function SubscriptionPage() {
                   </>
                 ) : null}
 
-                <button
-                  type="button"
-                  onClick={() => handleChoosePlan(plan.name)}
-                  style={{
-                    marginTop: "18px",
-                    width: "100%",
-                    border: "none",
-                    borderRadius: "12px",
-                    background: selectedIntegration
-                      ? `linear-gradient(135deg, ${plan.tone}, #22d3ee)`
-                      : "rgba(100,116,139,0.35)",
-                    color: selectedIntegration ? "white" : "#64748b",
-                    fontWeight: 800,
-                    padding: "12px 12px",
-                    cursor: selectedIntegration ? "pointer" : "not-allowed",
-                    fontSize: "14px",
-                    transition: "background 0.2s",
-                  }}
-                >
-                  {selectedIntegration
-                    ? "Continue to signup ->"
-                    : "Select integration method first"}
-                </button>
+                {plan.custom ? (
+                  <Link
+                    href="/quote"
+                    style={{
+                      marginTop: "18px",
+                      width: "100%",
+                      display: "inline-block",
+                      border: "none",
+                      borderRadius: "12px",
+                      background: `linear-gradient(135deg, ${plan.tone}, #22d3ee)`,
+                      color: "white",
+                      fontWeight: 800,
+                      padding: "12px 12px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      textAlign: "center",
+                      textDecoration: "none",
+                      transition: "background 0.2s",
+                    }}
+                  >
+                    Request Custom Quote
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleChoosePlan(plan.name)}
+                    style={{
+                      marginTop: "18px",
+                      width: "100%",
+                      border: "none",
+                      borderRadius: "12px",
+                      background: selectedIntegration
+                        ? `linear-gradient(135deg, ${plan.tone}, #22d3ee)`
+                        : "rgba(100,116,139,0.35)",
+                      color: selectedIntegration ? "white" : "#64748b",
+                      fontWeight: 800,
+                      padding: "12px 12px",
+                      cursor: selectedIntegration ? "pointer" : "not-allowed",
+                      fontSize: "14px",
+                      transition: "background 0.2s",
+                    }}
+                  >
+                    {selectedIntegration
+                      ? "Continue to signup ->"
+                      : "Select integration method first"}
+                  </button>
+                )}
 
                 {selectedIntegrationData ? (
                   <div style={{ marginTop: "8px", color: "#64748b", fontSize: "11px", textAlign: "center" }}>
@@ -464,7 +313,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        {/* SMS note */}
+        {/* Custom work note */}
         <div
           style={{
             marginTop: "24px",
@@ -474,9 +323,12 @@ export default function SubscriptionPage() {
             padding: "14px 16px",
           }}
         >
-          <div style={{ color: "#93c5fd", fontWeight: 700, marginBottom: "4px" }}>SMS pricing note</div>
+          <div style={{ color: "#93c5fd", fontWeight: 700, marginBottom: "4px" }}>How pricing & quotes work</div>
           <div style={{ color: "#cbd5e1", fontSize: "13px", lineHeight: 1.5 }}>
-            Included monthly updates cover opening hours, menu/FAQ adjustments, and minor logic tweaks. Larger changes are handled as billable upgrades.
+            <strong>1. Free Consultation:</strong> Tell us what you need.<br/>
+            <strong>2. Transparent Quote:</strong> We’ll scope your requirements and provide a clear, fixed quote for your build, agent, or integration.<br/>
+            <strong>3. No Surprises:</strong> Ongoing work and add-ons are always quoted in advance. No hidden fees.<br/>
+            <strong>4. Start Small, Scale Up:</strong> Begin with a starter package and add features as you grow.
           </div>
         </div>
       </div>

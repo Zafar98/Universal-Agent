@@ -21,6 +21,8 @@ type DemoCallRecord = {
   workflowSummary: string;
   savedItems: string[];
   actions: string[]; // New: list of actions agent performed
+  callerName?: string;
+  reason?: string;
 };
 
 const CALL_LIMIT_MS = 60_000;

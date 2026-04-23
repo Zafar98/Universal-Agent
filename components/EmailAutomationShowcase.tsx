@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useState as useClientState } from "react";
+// If you have an API endpoint, import axios or fetch as needed
 
 type WorkflowStep = {
   icon: string;
@@ -22,219 +24,171 @@ type EmailCase = {
 };
 
 const CASES: EmailCase[] = [
+  // Email Automation Agent (existing)
+  // ...existing email cases...
+  // Voice Call Automation Agent
   {
-    id: "email-1",
-    customer: "Sarah Mitchell",
-    from: "sarah.mitchell@example.com",
-    subject: "Charged twice on April invoice — please refund",
-    receivedAt: "09:14",
+    id: "voice-1",
+    customer: "Inbound Caller",
+    from: "(020) 1234 5678",
+    subject: "Missed appointment reschedule",
+    receivedAt: "09:45",
     urgency: "medium",
+    category: "support",
+    body: "Caller requests to reschedule a missed appointment for next week.",
+    steps: [
+      { icon: "📞", label: "Call received", detail: "Caller identified via phone number. Intent: reschedule appointment." },
+      { icon: "📅", label: "Calendar checked", detail: "Available slots for next week retrieved from scheduling system." },
+      { icon: "✅", label: "Slot confirmed", detail: "Caller selects preferred slot. Appointment updated in system." },
+      { icon: "✉️", label: "Confirmation sent", detail: "SMS and email confirmation sent to caller." },
+    ],
+  },
+  // Live Chat Agent
+  {
+    id: "chat-1",
+    customer: "Website Visitor",
+    from: "chat-widget",
+    subject: "Product availability inquiry",
+    receivedAt: "11:10",
+    urgency: "low",
+    category: "support",
+    body: "Visitor asks if product X is in stock.",
+    steps: [
+      { icon: "💬", label: "Chat started", detail: "Visitor opens chat widget and asks about product X." },
+      { icon: "🔍", label: "Inventory checked", detail: "Stock database queried for product X availability." },
+      { icon: "✅", label: "Response sent", detail: "Agent replies with stock status and purchase link." },
+    ],
+  },
+  // SMS/Text Automation Agent
+  {
+    id: "sms-1",
+    customer: "Customer Mobile",
+    from: "+447700900123",
+    subject: "Order delivery update",
+    receivedAt: "13:22",
+    urgency: "medium",
+    category: "support",
+    body: "Customer requests delivery status for order #12345.",
+    steps: [
+      { icon: "📲", label: "SMS received", detail: "Order number extracted from message." },
+      { icon: "🚚", label: "Order tracked", detail: "Delivery API queried for status." },
+      { icon: "✅", label: "Status sent", detail: "SMS reply sent with delivery ETA." },
+    ],
+  },
+  // Social Media Agent
+  {
+    id: "social-1",
+    customer: "Twitter User",
+    from: "@customer123",
+    subject: "DM: Need help with login",
+    receivedAt: "15:05",
+    urgency: "medium",
+    category: "support",
+    body: "User sends Twitter DM about login issues.",
+    steps: [
+      { icon: "🐦", label: "DM received", detail: "Twitter DM parsed for intent and user ID." },
+      { icon: "🔑", label: "Account checked", detail: "User account status checked in CRM." },
+      { icon: "✅", label: "Reply sent", detail: "Agent replies with password reset instructions." },
+    ],
+  },
+  // Document Processing Agent
+  {
+    id: "doc-1",
+    customer: "Accounts Team",
+    from: "accounts@company.com",
+    subject: "Invoice #2026 upload",
+    receivedAt: "16:30",
+    urgency: "low",
     category: "billing",
-    body:
-      "Hi, I noticed I've been charged twice for the same monthly subscription — both on 1st April and 3rd April. Can someone look into this and arrange a refund? I'd like a case reference too. Thanks, Sarah.",
+    body: "Invoice PDF uploaded for processing.",
     steps: [
-      {
-        icon: "📨",
-        label: "Email received & parsed",
-        detail: "Sender identity confirmed, subject line classified as billing dispute. Message body extracted and tokenised.",
-      },
-      {
-        icon: "🔍",
-        label: "Intent classified",
-        detail: "Intent: duplicate charge complaint. Urgency set to Medium. Category: Billing. No escalation keyword detected.",
-      },
-      {
-        icon: "👤",
-        label: "Account lookup",
-        detail: "Customer record located by email address. Subscription tier confirmed. Invoice history for April retrieved.",
-      },
-      {
-        icon: "🧾",
-        label: "Duplicate charge confirmed",
-        detail: "Two separate charges found on 1st April (£49.99) and 3rd April (£49.99) for the same billing period. Root cause: payment retry after gateway timeout.",
-      },
-      {
-        icon: "🔄",
-        label: "Refund initiated",
-        detail: "Refund request raised via billing API for £49.99. Case reference #BL-20482 generated. Timeline: 3–5 business days.",
-      },
-      {
-        icon: "✉️",
-        label: "Reply sent & case closed",
-        detail: "Email sent to Sarah confirming duplicate, refund amount, case reference, and expected timeline. Ticket closed.",
-      },
+      { icon: "📄", label: "Document received", detail: "PDF invoice uploaded and parsed." },
+      { icon: "🔍", label: "Data extracted", detail: "Invoice fields extracted using OCR." },
+      { icon: "💾", label: "Saved to system", detail: "Invoice data saved to accounting software." },
+      { icon: "✅", label: "Confirmation sent", detail: "Accounts team notified of successful upload." },
     ],
   },
+  // Booking & Scheduling Agent (already present as booking)
+  // Payment & Billing Agent (already present as billing)
+  // HR/Recruitment Agent
   {
-    id: "email-2",
-    customer: "City Hotel — Front Desk",
-    from: "frontdesk@cityhotel.co.uk",
-    subject: "URGENT: Guest cannot modify reservation — error on portal",
-    receivedAt: "10:02",
-    urgency: "high",
-    category: "booking",
-    body:
-      "Hi, a guest checking in on Friday is trying to move their booking from Room 214 to a sea-view room. The portal keeps throwing an error on the date change screen. Please fix this urgently — the guest is very unhappy.",
+    id: "hr-1",
+    customer: "Job Applicant",
+    from: "applicant@email.com",
+    subject: "Application for Customer Support Role",
+    receivedAt: "10:00",
+    urgency: "low",
+    category: "support",
+    body: "Applicant submits CV for open position.",
     steps: [
-      {
-        icon: "📨",
-        label: "Email received & parsed",
-        detail: "High-urgency keyword 'URGENT' detected in subject. Sender matched to registered hotel partner account. Request type: booking modification.",
-      },
-      {
-        icon: "🔍",
-        label: "Intent classified",
-        detail: "Intent: reservation change request with portal error report. Urgency set to High. Category: Booking. Guest displeasure flag raised.",
-      },
-      {
-        icon: "📅",
-        label: "Reservation located",
-        detail: "Booking reference retrieved from partner account. Guest: Mr. R. Patel. Current room: 214 (standard). Requested: sea-view room on same dates.",
-      },
-      {
-        icon: "🏨",
-        label: "Availability confirmed",
-        detail: "Sea-view rooms checked for Friday check-in. Room 308 available. Upgrade fee policy applied: £30/night differential pre-authorised.",
-      },
-      {
-        icon: "🔄",
-        label: "Booking updated & portal error logged",
-        detail: "Room changed to 308 directly via booking API (bypassing broken portal). Portal error logged as incident #IT-0912 for engineering team.",
-      },
-      {
-        icon: "✉️",
-        label: "Confirmation sent",
-        detail: "Revised confirmation emailed to front desk and guest. Apology note included. Portal incident reference shared with hotel IT contact.",
-      },
+      { icon: "📨", label: "Application received", detail: "CV and cover letter parsed." },
+      { icon: "🔍", label: "Screening", detail: "Applicant screened for required skills." },
+      { icon: "📅", label: "Interview scheduled", detail: "Interview slot offered and confirmed." },
+      { icon: "✅", label: "Confirmation sent", detail: "Applicant notified of interview details." },
     ],
   },
+  // IT Helpdesk Agent
   {
-    id: "email-3",
-    customer: "Mario Ali",
-    from: "mario.ali@example.com",
-    subject: "Still no update on my heating repair — 3 days and counting",
-    receivedAt: "11:37",
-    urgency: "high",
-    category: "complaint",
-    body:
-      "I reported a complete heating failure in my flat on Tuesday morning. It is now Friday and I have had no update, no contractor visit, no anything. I am a vulnerable resident. This is completely unacceptable. Please respond immediately.",
-    steps: [
-      {
-        icon: "📨",
-        label: "Email received & parsed",
-        detail: "Complaint type detected. Sender matched to tenant record. 'Vulnerable resident' keyword flagged for priority routing.",
-      },
-      {
-        icon: "🔍",
-        label: "Intent classified",
-        detail: "Intent: unresolved maintenance complaint. Urgency set to High. Vulnerable resident flag applied. Category: Complaint.",
-      },
-      {
-        icon: "🎫",
-        label: "Open ticket located",
-        detail: "Maintenance ticket #MT-3841 found — heating failure reported Tuesday 08:43. Status: awaiting contractor assignment. Age: 3 days. SLA: 24h — BREACHED.",
-      },
-      {
-        icon: "⬆️",
-        label: "Priority escalated",
-        detail: "Ticket escalated to Critical. Housing manager notified. Emergency contractor dispatched. ETA: same day by 17:00.",
-      },
-      {
-        icon: "✉️",
-        label: "Reply sent to tenant",
-        detail: "Apology email sent with escalation confirmation, contractor ETA, and direct manager contact number. SLA breach acknowledged.",
-      },
-      {
-        icon: "📋",
-        label: "Follow-up scheduled",
-        detail: "24-hour auto-follow-up added to ticket. Complaint formally logged in resident relations system for review.",
-      },
-    ],
-  },
-  {
-    id: "email-4",
-    customer: "James Turner",
-    from: "j.turner@mapleestate.co.uk",
-    subject: "Emergency — roof leak in Block C, water entering flat 4",
-    receivedAt: "07:52",
-    urgency: "critical",
-    category: "emergency",
-    body:
-      "There is a significant roof leak directly above Flat 4, Block C. The tenant called in last night and is reporting water dripping from the ceiling onto furniture. It rained heavily overnight. This needs immediate attention — please treat as emergency.",
-    steps: [
-      {
-        icon: "📨",
-        label: "Email received & parsed",
-        detail: "Emergency keyword detected: 'Emergency', 'roof leak', 'immediate'. Received 07:52 — flagged for out-of-hours routing.",
-      },
-      {
-        icon: "🚨",
-        label: "Emergency classification",
-        detail: "Category: Emergency structural repair. Urgency: Critical. Affected property: Block C, Flat 4 — pulled from estate database.",
-      },
-      {
-        icon: "👤",
-        label: "Tenant record confirmed",
-        detail: "Tenant: Ms. P. Okafor. Tenancy active. Property: 4 Maple Estate, Block C. Roof last inspected: 14 months ago. Contractor on file retrieved.",
-      },
-      {
-        icon: "🏗️",
-        label: "Emergency contractor dispatched",
-        detail: "Out-of-hours roofing contractor notified via API. Emergency ticket #EM-0047 raised. SLA: 2-hour on-site response. Contractor ETA: 09:30.",
-      },
-      {
-        icon: "✉️",
-        label: "Email replies sent",
-        detail: "Confirmation emailed to property manager James Turner. Tenant Ms. Okafor notified with contractor ETA, emergency reference, and advice to protect belongings.",
-      },
-      {
-        icon: "📲",
-        label: "On-call manager alerted",
-        detail: "SMS alert sent to on-call maintenance manager with full incident summary. Ticket marked for post-repair inspection and insurance log.",
-      },
-    ],
-  },
-  {
-    id: "email-5",
-    customer: "Priya Sharma",
-    from: "priya.sharma@freshbites.co.uk",
-    subject: "Wrong order delivered — requesting refund and explanation",
-    receivedAt: "14:20",
+    id: "it-1",
+    customer: "Employee",
+    from: "employee@company.com",
+    subject: "Password reset request",
+    receivedAt: "08:30",
     urgency: "medium",
-    category: "complaint",
-    body:
-      "I placed order #FB-9921 at 1pm today. The delivery arrived with the completely wrong items — I ordered the vegan platter and received a meat option. I have a food allergy and this is a serious issue. I am requesting a full refund and an explanation of how this happened.",
+    category: "support",
+    body: "Employee requests password reset for company portal.",
     steps: [
-      {
-        icon: "📨",
-        label: "Email received & parsed",
-        detail: "Sender matched to customer record. Order reference #FB-9921 extracted. Allergy concern keyword detected — severity escalation triggered.",
-      },
-      {
-        icon: "🔍",
-        label: "Intent classified",
-        detail: "Intent: wrong order received, refund request with food allergy concern. Urgency: Medium (elevated from low due to allergy flag). Category: Complaint.",
-      },
-      {
-        icon: "🧾",
-        label: "Order record retrieved",
-        detail: "Order #FB-9921 confirmed: vegan platter, 1pm pickup, 1:34pm delivered. Fulfilment note: item substituted by kitchen at 12:58 — no customer notification sent. Error confirmed.",
-      },
-      {
-        icon: "💰",
-        label: "Refund & resolution applied",
-        detail: "Full refund of £18.50 processed immediately. Complimentary £10 credit applied to account. Allergy incident flagged to kitchen manager for review.",
-      },
-      {
-        icon: "✉️",
-        label: "Apology & confirmation sent",
-        detail: "Email sent with full apology, refund confirmation, credit code, and explanation of error. Allergy safeguarding steps communicated.",
-      },
-      {
-        icon: "📋",
-        label: "Incident logged",
-        detail: "Allergy incident report filed internally. Kitchen substitution policy flagged for review. Case closed — customer satisfaction follow-up scheduled for 48h.",
-      },
+      { icon: "💻", label: "Ticket created", detail: "Password reset ticket logged in helpdesk system." },
+      { icon: "🔑", label: "Reset processed", detail: "Temporary password generated and emailed." },
+      { icon: "✅", label: "Confirmation sent", detail: "Employee notified of password reset." },
+    ],
+  },
+  // Compliance & Audit Agent
+  {
+    id: "compliance-1",
+    customer: "Compliance Officer",
+    from: "compliance@company.com",
+    subject: "Quarterly audit log review",
+    receivedAt: "12:00",
+    urgency: "low",
+    category: "support",
+    body: "Request for audit log review for Q1.",
+    steps: [
+      { icon: "📝", label: "Request received", detail: "Audit log review request logged." },
+      { icon: "🔍", label: "Logs analyzed", detail: "System logs analyzed for compliance issues." },
+      { icon: "✅", label: "Report generated", detail: "Audit report generated and sent to officer." },
+    ],
+  },
+  // Data Enrichment Agent
+  {
+    id: "data-1",
+    customer: "Sales Team",
+    from: "sales@company.com",
+    subject: "Enrich lead data",
+    receivedAt: "14:45",
+    urgency: "low",
+    category: "support",
+    body: "Sales team requests enrichment of new lead list.",
+    steps: [
+      { icon: "📈", label: "Request received", detail: "Lead list uploaded for enrichment." },
+      { icon: "🔍", label: "Data gathered", detail: "Public and proprietary sources queried for additional info." },
+      { icon: "✅", label: "Leads updated", detail: "CRM updated with enriched data." },
+    ],
+  },
+  // Custom Workflow Agent
+  {
+    id: "custom-1",
+    customer: "Operations Manager",
+    from: "ops@company.com",
+    subject: "Custom workflow automation",
+    receivedAt: "17:00",
+    urgency: "medium",
+    category: "support",
+    body: "Manager requests automation for a unique internal process.",
+    steps: [
+      { icon: "⚙️", label: "Request received", detail: "Custom workflow requirements gathered." },
+      { icon: "🛠️", label: "Workflow built", detail: "Automation logic implemented and tested." },
+      { icon: "✅", label: "Workflow deployed", detail: "Custom workflow deployed and manager notified." },
     ],
   },
 ];
@@ -262,6 +216,15 @@ export default function EmailAutomationShowcase() {
     [selectedCaseId]
   );
 
+  // Customer email form state
+  const [customerEmail, setCustomerEmail] = useClientState("");
+  const [customerSubject, setCustomerSubject] = useClientState("");
+  const [customerBody, setCustomerBody] = useClientState("");
+  const [sending, setSending] = useClientState(false);
+  const [sent, setSent] = useClientState(false);
+  const [agentReply, setAgentReply] = useClientState("");
+  const [error, setError] = useClientState("");
+
   const totalSteps = selectedCase.steps.length;
   const workflowComplete = workflowStep >= totalSteps;
 
@@ -275,6 +238,39 @@ export default function EmailAutomationShowcase() {
   const selectCase = (caseId: string) => {
     setSelectedCaseId(caseId);
     setWorkflowStep(0);
+  };
+
+  // Send real email to agent and auto-reply to customer
+  const handleCustomerEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    setError("");
+    setSent(false);
+    setAgentReply("");
+    try {
+      const res = await fetch("/api/send-demo-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerEmail,
+          customerSubject,
+          customerBody,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error");
+      setSent(true);
+      setAgentReply(
+        `Hi, thank you for your message. Our agent has received your issue: "${customerBody}" and will respond shortly. [Check your email for a real auto-reply.]`
+      );
+      setCustomerEmail("");
+      setCustomerSubject("");
+      setCustomerBody("");
+    } catch (err) {
+      setError("Failed to send email. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -304,13 +300,86 @@ export default function EmailAutomationShowcase() {
               Capability Showcase
             </div>
             <h1 style={{ margin: 0, fontSize: "42px", lineHeight: 1.05, color: "#e0f2fe", letterSpacing: "-0.03em" }}>
-              Demo Email
+              Demo: Build an Agent for Any Workflow
             </h1>
             <p style={{ marginTop: "10px", marginBottom: 0, color: "#93c5fd", maxWidth: "760px", lineHeight: 1.7 }}>
-              Choose a real scenario and step through how the agent receives, decides, and resolves it.
+              See how our platform builds and runs a digital employee for your business. We design, build, and install your custom agent—payment is only taken after you confirm your requirements and features. Setup fee is £1500 (starting price); all add-ons and advanced features are quoted after discovery.
             </p>
           </div>
         </header>
+
+        {/* Customer email input form */}
+        <section style={{ marginBottom: 32 }}>
+          <form
+            onSubmit={handleCustomerEmail}
+            style={{
+              background: "rgba(2,6,23,0.56)",
+              border: "1px solid rgba(148,163,184,0.2)",
+              borderRadius: 14,
+              padding: 20,
+              maxWidth: 520,
+              margin: "0 auto 24px auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Try it yourself — send an email to the agent</div>
+            <input
+              type="email"
+              required
+              placeholder="Your email address"
+              value={customerEmail}
+              onChange={e => setCustomerEmail(e.target.value)}
+              style={{ padding: 10, borderRadius: 8, border: "1px solid #334155", marginBottom: 4 }}
+            />
+            <input
+              type="text"
+              required
+              placeholder="Subject"
+              value={customerSubject}
+              onChange={e => setCustomerSubject(e.target.value)}
+              style={{ padding: 10, borderRadius: 8, border: "1px solid #334155", marginBottom: 4 }}
+            />
+            <textarea
+              required
+              placeholder="Describe your issue or request..."
+              value={customerBody}
+              onChange={e => setCustomerBody(e.target.value)}
+              rows={4}
+              style={{ padding: 10, borderRadius: 8, border: "1px solid #334155", marginBottom: 4, resize: "vertical" }}
+            />
+            <button
+              type="submit"
+              disabled={sending}
+              style={{
+                background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
+                color: "white",
+                fontWeight: 700,
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 18px",
+                cursor: sending ? "not-allowed" : "pointer",
+                marginTop: 4,
+              }}
+            >
+              {sending ? "Sending..." : "Send Email"}
+            </button>
+            {sent && (
+              <div style={{ color: "#4ade80", marginTop: 8, fontWeight: 700 }}>
+                Email sent! The agent will reply to your address.
+              </div>
+            )}
+            {agentReply && (
+              <div style={{ color: "#fbbf24", marginTop: 8, fontWeight: 700 }}>
+                Agent reply: {agentReply}
+              </div>
+            )}
+            {error && (
+              <div style={{ color: "#ef4444", marginTop: 8 }}>{error}</div>
+            )}
+          </form>
+        </section>
 
         <section
           style={{
@@ -461,6 +530,17 @@ export default function EmailAutomationShowcase() {
                 );
               })}
             </div>
+            {/* Autonomous workflow summary */}
+            {workflowComplete && (
+              <div style={{ color: "#a3e635", fontSize: "13px", marginTop: "10px", marginBottom: "10px" }}>
+                <strong>Agent Actions:</strong>
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {selectedCase.steps.map((step, idx) => (
+                    <li key={idx}>{step.label}: {step.detail}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <button
@@ -481,7 +561,7 @@ export default function EmailAutomationShowcase() {
                 {workflowComplete ? "↩ Replay workflow" : `Run step ${workflowStep + 1} →`}
               </button>
               <Link
-                href="/signup?plan=starter&integration=email-automation"
+                href="/quote"
                 style={{
                   textDecoration: "none",
                   borderRadius: "12px",
@@ -493,7 +573,7 @@ export default function EmailAutomationShowcase() {
                   fontSize: "14px",
                 }}
               >
-                Get Started
+                Request a Quote
               </Link>
             </div>
           </div>
@@ -513,10 +593,10 @@ export default function EmailAutomationShowcase() {
               fontSize: "13px",
             }}
           >
-            Choose Plan
+            See Pricing
           </Link>
           <div style={{ color: "#93c5fd", fontSize: "12px", display: "inline-flex", alignItems: "center" }}>
-            Starter includes email automation only. Growth and Enterprise add voice and other channels.
+            Payment is only taken after you confirm your requirements. Setup fee is £1500 (starting price); all features and add-ons are quoted after discovery.
           </div>
         </div>
       </div>

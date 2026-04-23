@@ -731,11 +731,12 @@ export function useVoiceCall() {
             // Data is complete - ask for explicit confirmation
             const summary = buildConfirmationSummary(caseData, tenantProfileRef.current);
 
+
             if (summary && !confirmationCompletedRef.current) {
               sendDataChannelEvent({
                 type: "response.create",
                 response: {
-                  instructions: `Before closing, confirm these details with the customer. Say: "Let me confirm: ${summary} Is that all correct?" Listen for confirmation. Only after they explicitly confirm should you say goodbye and close the call.`
+                  instructions: `Before closing, confirm these details with the customer. Say: "Let me confirm: ${summary} Is that all correct?" Listen for confirmation. If they confirm, ask: 'Is there anything else I can help you with today?' Only if they say no, then say: 'Thank you for calling, enjoy your day!' and end the call.`
                 },
               });
 
@@ -754,14 +755,10 @@ export function useVoiceCall() {
               confirmationPending: false,
             }));
 
-            const closingLine = tenantProfileRef.current
-              ? getCallClosingLineForTenant(tenantProfileRef.current)
-              : "Your request is complete. Thanks for calling. Take care. Goodbye.";
-
             sendDataChannelEvent({
               type: "response.create",
               response: {
-                instructions: `All required details are confirmed. End the call now with this exact ending line: '${closingLine}'`
+                instructions: `All required details are confirmed. Ask: 'Is there anything else I can help you with today?' If the caller says no, end with: 'Thank you for calling, enjoy your day!' and then end the call.`
               },
             });
 
